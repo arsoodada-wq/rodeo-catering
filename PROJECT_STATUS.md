@@ -29,22 +29,37 @@ Tracking against the 12 implementation phases from the project brief.
 - Not done: full component library (cards, modals, form inputs, toasts),
   documented in a style guide page
 
-## Phase 4 — Public Website 🟡 (homepage only)
+## Phase 4 — Public Website 🟡 (all core pages live)
 
-- Done: homepage (hero, why-Rodeo, event types, menu showcase, live
-  cookout/corporate teasers, process, testimonials + award, service
-  area/FAQ, final CTA), Header/Footer/mobile sticky CTA
-- Not done: `/catering`, `/corporate-catering`, `/live-cookout-catering`,
-  and the other event/location landing pages listed in the brief (section 20)
+- Done: homepage, `/catering` (hub + wizard), `/corporate-catering`,
+  `/live-cookout-catering`, `/birthday-party-catering`,
+  `/graduation-catering`, `/wedding-catering`, `/about`, `/blog` (holding
+  page), `/privacy-policy`, `/terms`, `/accessibility` (draft, noindexed).
+  Header/Footer/mobile sticky CTA. All internal links verified working
+  (`npm run build` prerenders all 13 routes)
+- Not done: `/school-catering`, `/sports-team-catering`, `/party-catering`,
+  `/large-group-catering`, `/burger-catering`, `/chicken-catering`, and
+  location pages under `/catering/[slug]` (blocked on which `ServiceArea`
+  rows the business confirms — see seed data)
 
-## Phase 5 — Catering Wizard ⬜ not started
+## Phase 5 — Catering Wizard 🟡 (wizard built, AI layer stubbed)
 
-Step-by-step builder (event type → guest count → date → location → style →
-food → recommendation → estimate), grounded AI concierge tool layer.
+- Done: 8-step wizard on `/catering#builder` (event type → guests → date →
+  location → style → food selections → contact → review/submit), wired to
+  a `submitCateringLead` server action that creates a `Lead` row. Never
+  shows a fabricated price — the review step explains the team will follow
+  up with a quote. Verified the full flow end-to-end in the browser,
+  including the DB-not-configured error path
+- Fixed in this phase: `src/lib/db.ts` constructed `PrismaClient` eagerly
+  at import time, so a missing `DATABASE_URL` threw outside of any
+  try/catch and hung the UI on submit. Now lazy via a `Proxy`
+- Not done: the natural-language AI concierge layer on top of this wizard
+  (section 13), `get_*` server-side tool functions for it (section 15)
 
-## Phase 6 — CRM / Quotes ⬜ not started
+## Phase 6 — CRM / Quotes 🟡 (lead capture only)
 
-Lead capture wiring, quote generation + PDF, follow-up workflow.
+- Done: catering wizard creates real `Lead` rows (once `DATABASE_URL` is set)
+- Not done: admin lead list, quote generation/PDF, follow-up workflow
 
 ## Phase 7 — Admin Dashboard ⬜ not started
 

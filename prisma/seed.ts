@@ -9,12 +9,33 @@
  */
 import { PrismaClient, Prisma } from "../src/generated/prisma/client.ts";
 import { PrismaPg } from "@prisma/adapter-pg";
+import bcrypt from "bcryptjs";
 import "dotenv/config";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const db = new PrismaClient({ adapter });
 
 async function main() {
+  // ── First admin account (no signup flow exists by design) ──
+  if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+    const passwordHash = await bcrypt.hash(process.env.ADMIN_PASSWORD, 12);
+    await db.user.upsert({
+      where: { email: process.env.ADMIN_EMAIL },
+      create: {
+        email: process.env.ADMIN_EMAIL,
+        name: "Admin",
+        passwordHash,
+        role: "SUPER_ADMIN",
+      },
+      update: {},
+    });
+    console.log(`Admin user ready: ${process.env.ADMIN_EMAIL}`);
+  } else {
+    console.warn(
+      "ADMIN_EMAIL / ADMIN_PASSWORD not set — skipping admin user creation. Set them in .env and re-run to create the first admin login."
+    );
+  }
+
   // ── Site settings (single source of truth for confirmed business facts) ──
   await db.siteSetting.createMany({
     data: [
