@@ -56,15 +56,29 @@ Tracking against the 12 implementation phases from the project brief.
 - Not done: the natural-language AI concierge layer on top of this wizard
   (section 13), `get_*` server-side tool functions for it (section 15)
 
-## Phase 6 — CRM / Quotes 🟡 (lead capture only)
+## Phase 6 — CRM / Quotes 🟡 (lead capture + admin view)
 
-- Done: catering wizard creates real `Lead` rows (once `DATABASE_URL` is set)
-- Not done: admin lead list, quote generation/PDF, follow-up workflow
+- Done: catering wizard creates real `Lead` rows; admin can view all leads
+  and update status (`/admin/leads`)
+- Not done: quote generation/PDF, follow-up workflow, editing lead details
 
-## Phase 7 — Admin Dashboard ⬜ not started
+## Phase 7 — Admin Dashboard 🟡 (auth + first screens)
 
-`/admin` with auth, RBAC (roles are modeled in Prisma; enforcement + UI not
-built), and management screens for every content type in the schema.
+- Done: Auth.js v5 credentials login (`/admin/login`), JWT sessions, first
+  admin bootstrapped via `ADMIN_EMAIL`/`ADMIN_PASSWORD` in `prisma/seed.ts`.
+  Dashboard home (lead counts by status, recent leads) and a full leads
+  list with inline status updates
+- Fixed two real bugs while verifying this in the browser: (1) the route
+  gate file was at the project root instead of `src/` (Next.js requires it
+  co-located with `src/app` in a src-dir project) and was silently never
+  running; (2) the gate relied on Auth.js's `authorized` callback, which
+  let requests through when `AUTH_SECRET` was unset instead of blocking —
+  rewrote it to check `req.auth` directly so it fails closed. Also renamed
+  `middleware.ts` → `src/proxy.ts` per Next.js 16's renamed convention
+- Not done: RBAC enforcement beyond login (role field exists on `User` but
+  isn't checked anywhere yet), management screens for every other content
+  type in the schema (menu, packages, service areas, FAQs, reviews, awards,
+  blog, pages, media, social, outreach, users)
 
 ## Phase 8 — CMS / SEO ⬜ not started
 

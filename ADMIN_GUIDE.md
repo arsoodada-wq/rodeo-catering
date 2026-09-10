@@ -1,16 +1,38 @@
 # Admin Guide
 
-_Stub — the `/admin` dashboard is not built yet (see `PROJECT_STATUS.md`,
-Phase 7). This file will be filled in with real, screenshot-backed
-instructions once it exists so the business owner can run the site without
-a developer, per the project's core requirement._
+_Partial — logging in and viewing leads work today; most management
+screens listed below don't exist yet (see `PROJECT_STATUS.md`, Phase 7)._
+
+## Logging in
+
+1. Make sure `DATABASE_URL`, `AUTH_SECRET`, and `ADMIN_EMAIL`/`ADMIN_PASSWORD`
+   are set in `.env` (see `.env.example`).
+2. Run `npm run db:seed` — this creates your admin account (or updates its
+   password if it already exists).
+3. Go to `/admin/login` and sign in with `ADMIN_EMAIL`/`ADMIN_PASSWORD`.
+4. Change your password after first login (there is no self-service
+   password-change screen yet — update it via `npm run db:studio` on the
+   `User` table's `passwordHash`, hashed with bcrypt, or re-run the seed
+   with a new `ADMIN_PASSWORD`).
+
+There is no signup flow by design — every admin account is created this
+way or (once built) by an existing Super Admin.
+
+## What works today
+
+- **Dashboard** (`/admin`): lead counts by status, 5 most recent leads
+- **Leads** (`/admin/leads`): full list of catering wizard submissions,
+  with a dropdown to update each lead's status (New, Contacted, Quote
+  Sent, Follow-Up, Confirmed, Completed, Lost)
 
 ## What will eventually live here
 
-- Logging in and roles (Super Admin / Manager / Staff / Marketing)
+- Role enforcement (Super Admin / Manager / Staff / Marketing — the `role`
+  field exists on every user but nothing checks it yet, so any logged-in
+  user currently has full access)
 - Managing menu items, packages, and pricing
 - Managing service areas and delivery fees
-- Managing leads, quotes, and orders
+- Quotes and orders
 - Managing FAQs, reviews, and awards/recognition
 - Managing blog posts and landing pages
 - Managing SEO metadata per page
@@ -19,13 +41,13 @@ a developer, per the project's core requirement._
 
 ## In the meantime
 
-All business data lives in Postgres via Prisma. Until the admin UI exists,
-changes are made directly:
+For anything not listed under "What works today," use Prisma Studio
+directly:
 
 ```bash
 npm run db:studio
 ```
 
-This opens Prisma Studio, a visual database browser, at
-`http://localhost:5555` — usable for basic edits (e.g., setting a package's
-price) but not a substitute for the real dashboard.
+This opens a visual database browser at `http://localhost:5555` — usable
+for basic edits (e.g., setting a package's price) but not a substitute for
+the real dashboard screens.
