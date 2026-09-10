@@ -19,8 +19,19 @@ function createPrismaClient() {
   return new PrismaClient({ adapter });
 }
 
-export const db = globalForPrisma.prisma ?? createPrismaClient();
-
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = db;
+// Lazy: the client is only constructed the first time a query actually
+// runs, not at module import time. That way a missing DATABASE_URL
+// surfaces as a normal thrown error inside whichever try/catch calls a
+// query, instead of crashing every route that merely imports this module.
+function getPrismaClient() {
+  if (!globalForPrisma.prisma) {
+    globalForPrisma.prisma = createPrismaClient();
+  }
+  return globalForPrisma.prisma;
 }
+
+export const db = new Proxy({} as PrismaClient, {
+  get(_target, prop, receiver) {
+    return Reflect.get(getPrismaClient(), prop, receiver);
+  },
+});

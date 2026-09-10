@@ -28,7 +28,7 @@ export function EventTypes() {
           {eventTypes.map((event) => (
             <Link
               key={event.key}
-              href={`/catering#builder?event=${event.key}`}
+              href="/catering#builder"
               className="group rounded-2xl border border-ink-900/8 bg-white p-6 transition-all hover:-translate-y-0.5 hover:border-rodeo-200 hover:shadow-lg hover:shadow-rodeo-900/5"
             >
               <h3 className="text-lg font-bold text-ink-900 group-hover:text-rodeo-600">

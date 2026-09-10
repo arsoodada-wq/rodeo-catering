@@ -37,7 +37,7 @@ export function Hero() {
             <Button href="/catering#builder" size="lg">
               Build Your Catering Order
             </Button>
-            <Button href="/catering#quote" size="lg" variant="ghost" className="border-cream-50/25 text-cream-50 hover:border-cream-50/60">
+            <Button href="/catering#builder" size="lg" variant="ghost" className="border-cream-50/25 text-cream-50 hover:border-cream-50/60">
               Request a Catering Quote
             </Button>
           </div>

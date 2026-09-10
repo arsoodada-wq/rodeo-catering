@@ -64,6 +64,20 @@ export const menuHighlights = [
   },
 ] as const;
 
+// Package shells — mirrors prisma/seed.ts Package rows. No prices shown
+// anywhere: pricing is not published and must come from the business.
+export const packages = [
+  { slug: "office-lunch", name: "Office Lunch Package", description: "Individually-ready meals for meetings and workdays." },
+  { slug: "birthday-party", name: "Birthday Party Package", description: "Crowd-pleasing favorites built for celebrating." },
+  { slug: "graduation", name: "Graduation Package", description: "Feed an open house or grad party with ease." },
+  { slug: "family-party", name: "Family Party Package", description: "Reunions, holidays, and backyard get-togethers." },
+  { slug: "corporate", name: "Corporate Package", description: "Larger company events and appreciation days." },
+  { slug: "game-day", name: "Game Day Package", description: "Tailgates, tournaments, and team celebrations." },
+  { slug: "big-event", name: "Big Event Package", description: "200+ guests — full-scale event catering." },
+  { slug: "rodeo-signature", name: "Rodeo Signature Package", description: "Our full lineup of fan-favorite items." },
+  { slug: "live-cookout", name: "Live Cookout Package", description: "Cooked fresh, right at your event." },
+] as const;
+
 export const processSteps = [
   {
     title: "Tell Us About Your Event",
