@@ -1,0 +1,751 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// AUTH / ADMIN USERS
+// ─────────────────────────────────────────────────────────────────────────
+
+enum Role {
+  SUPER_ADMIN
+  MANAGER
+  STAFF
+  MARKETING
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String?
+  role          Role      @default(STAFF)
+  active        Boolean   @default(true)
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  assignedLeads Lead[]            @relation("AssignedStaff")
+  blogPosts     BlogPost[]
+  auditLogs     AuditLog[]
+  outreachOwned OutreachContact[] @relation("OutreachOwner")
+
+  @@map("users")
+}
+
+// Auth.js (NextAuth) adapter models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// Fine-grained permission keys mappable to roles beyond the base Role enum.
+// Lets admins grant/revoke individual capabilities without a code change.
+model Permission {
+  id          String  @id @default(cuid())
+  key         String  @unique // e.g. "orders.edit", "seo.publish", "users.manage"
+  label       String
+  description String?
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  role         Role
+  permissionId String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+  @@map("role_permissions")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action     String // e.g. "quote.sent", "package.updated"
+  entityType String
+  entityId   String
+  changes    Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@map("audit_logs")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// CRM: CUSTOMERS / LEADS / EVENTS
+// ─────────────────────────────────────────────────────────────────────────
+
+enum EventType {
+  CORPORATE
+  BIRTHDAY
+  GRADUATION
+  WEDDING
+  SCHOOL
+  SPORTS_TEAM
+  FAMILY_GATHERING
+  COMMUNITY
+  HOLIDAY
+  OTHER
+}
+
+enum CateringStyle {
+  PICKUP
+  DROP_OFF
+  FULL_SERVICE
+  LIVE_COOKOUT
+  CORPORATE_LUNCH
+  LARGE_EVENT
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUOTE_SENT
+  FOLLOW_UP
+  CONFIRMED
+  COMPLETED
+  LOST
+}
+
+enum LeadSource {
+  CATERING_WIZARD
+  QUOTE_FORM
+  PHONE
+  EMAIL
+  WALK_IN
+  REFERRAL
+  SOCIAL_MEDIA
+  OTHER
+}
+
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  company   String?
+  email     String?
+  phone     String?
+  street    String?
+  unit      String?
+  city      String?
+  state     String?
+  zip       String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  leads  Lead[]
+  orders CateringOrder[]
+  quotes Quote[]
+
+  @@map("customers")
+}
+
+model Lead {
+  id              String         @id @default(cuid())
+  customerId      String?
+  customer        Customer?      @relation(fields: [customerId], references: [id])
+  name            String
+  company         String?
+  email           String?
+  phone           String?
+  eventType       EventType
+  guestCount      Int
+  eventDate       DateTime?
+  eventTime       String?
+  street          String?
+  city            String?
+  state           String?
+  zip             String?
+  budget          Decimal?       @db.Decimal(10, 2)
+  cateringStyle   CateringStyle?
+  foodSelections  Json? // snapshot of wizard selections (packages/items chosen)
+  estimateTotal   Decimal?       @db.Decimal(10, 2)
+  source          LeadSource     @default(CATERING_WIZARD)
+  status          LeadStatus     @default(NEW)
+  notes           String?
+  assignedStaffId String?
+  assignedStaff   User?          @relation("AssignedStaff", fields: [assignedStaffId], references: [id])
+  followUpDate    DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  event  Event?
+  quotes Quote[]
+
+  @@index([status])
+  @@map("leads")
+}
+
+model Event {
+  id            String        @id @default(cuid())
+  leadId        String        @unique
+  lead          Lead          @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  eventType     EventType
+  date          DateTime
+  startTime     String?
+  endTime       String?
+  guestCount    Int
+  street        String?
+  unit          String?
+  city          String?
+  state         String?
+  zip           String?
+  cateringStyle CateringStyle
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  order CateringOrder?
+
+  @@map("events")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// MENU / PACKAGES / CATERING BUILDER
+// ─────────────────────────────────────────────────────────────────────────
+
+enum CategoryKind {
+  MENU
+  PACKAGE
+  ADDON
+}
+
+model Category {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  kind      CategoryKind
+  sortOrder Int          @default(0)
+  active    Boolean      @default(true)
+
+  menuItems MenuItem[]
+
+  @@map("categories")
+}
+
+enum PricingType {
+  FLAT
+  PER_PERSON
+}
+
+model MenuItem {
+  id             String      @id @default(cuid())
+  name           String
+  slug           String      @unique
+  description    String?
+  imageId        String?
+  image          Media?      @relation(fields: [imageId], references: [id])
+  price          Decimal?    @db.Decimal(10, 2) // null = "REQUIRES BUSINESS CONFIRMATION"
+  pricingType    PricingType @default(PER_PERSON)
+  minQuantity    Int?
+  maxQuantity    Int?
+  categoryId     String
+  category       Category    @relation(fields: [categoryId], references: [id])
+  available      Boolean     @default(true)
+  dietaryTags    String[]    @default([]) // vegan, vegetarian, halal, kosher, gluten-free
+  allergens      String[]    @default([])
+  adminNotes     String?
+  seoTitle       String?
+  seoDescription String?
+  sortOrder      Int         @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  packageItems PackageItem[]
+  orderItems   OrderItem[]
+
+  @@map("menu_items")
+}
+
+model Package {
+  id             String      @id @default(cuid())
+  name           String
+  slug           String      @unique
+  description    String?
+  imageId        String?
+  image          Media?      @relation(fields: [imageId], references: [id])
+  basePrice      Decimal?    @db.Decimal(10, 2) // REQUIRES BUSINESS CONFIRMATION until set
+  pricePerPerson Decimal?    @db.Decimal(10, 2)
+  minGuests      Int?
+  maxGuests      Int?
+  eventTypes     EventType[] @default([])
+  active         Boolean     @default(true)
+  featured       Boolean     @default(false)
+  sortOrder      Int         @default(0)
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  items      PackageItem[]
+  orderItems OrderItem[]
+
+  @@map("packages")
+}
+
+model PackageItem {
+  id               String   @id @default(cuid())
+  packageId        String
+  package          Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  menuItemId       String
+  menuItem         MenuItem @relation(fields: [menuItemId], references: [id])
+  quantityPerGuest Decimal? @db.Decimal(6, 2)
+  fixedQuantity    Int?
+  includedFree     Boolean  @default(true)
+
+  @@map("package_items")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// ORDERS
+// ─────────────────────────────────────────────────────────────────────────
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model CateringOrder {
+  id              String      @id @default(cuid())
+  customerId      String
+  customer        Customer    @relation(fields: [customerId], references: [id])
+  eventId         String      @unique
+  event           Event       @relation(fields: [eventId], references: [id])
+  status          OrderStatus @default(PENDING)
+  subtotal        Decimal     @db.Decimal(10, 2)
+  deliveryFee     Decimal     @default(0) @db.Decimal(10, 2)
+  tax             Decimal     @default(0) @db.Decimal(10, 2)
+  discount        Decimal     @default(0) @db.Decimal(10, 2)
+  total           Decimal     @db.Decimal(10, 2)
+  depositAmount   Decimal?    @db.Decimal(10, 2)
+  balanceAmount   Decimal?    @db.Decimal(10, 2)
+  assignedStaffId String?
+  internalNotes   String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  items    OrderItem[]
+  payments Payment[]
+
+  @@map("catering_orders")
+}
+
+model OrderItem {
+  id           String        @id @default(cuid())
+  orderId      String
+  order        CateringOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItemId   String?
+  menuItem     MenuItem?     @relation(fields: [menuItemId], references: [id])
+  packageId    String?
+  package      Package?      @relation(fields: [packageId], references: [id])
+  nameSnapshot String
+  quantity     Int
+  unitPrice    Decimal       @db.Decimal(10, 2)
+  lineTotal    Decimal       @db.Decimal(10, 2)
+  notes        String?
+
+  @@map("order_items")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// QUOTES / PAYMENTS
+// ─────────────────────────────────────────────────────────────────────────
+
+enum QuoteStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+model Quote {
+  id            String      @id @default(cuid())
+  quoteNumber   String      @unique
+  leadId        String?
+  lead          Lead?       @relation(fields: [leadId], references: [id])
+  customerId    String?
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+  status        QuoteStatus @default(DRAFT)
+  subtotal      Decimal     @db.Decimal(10, 2)
+  fees          Decimal     @default(0) @db.Decimal(10, 2)
+  discount      Decimal     @default(0) @db.Decimal(10, 2)
+  tax           Decimal     @default(0) @db.Decimal(10, 2)
+  total         Decimal     @db.Decimal(10, 2)
+  depositAmount Decimal?    @db.Decimal(10, 2)
+  balanceAmount Decimal?    @db.Decimal(10, 2)
+  termsText     String?
+  secureToken   String      @unique @default(cuid())
+  expiresAt     DateTime?
+  sentAt        DateTime?
+  viewedAt      DateTime?
+  acceptedAt    DateTime?
+  pdfUrl        String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  items    QuoteItem[]
+  payments Payment[]
+
+  @@map("quotes")
+}
+
+model QuoteItem {
+  id          String  @id @default(cuid())
+  quoteId     String
+  quote       Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Int
+  unitPrice   Decimal @db.Decimal(10, 2)
+  lineTotal   Decimal @db.Decimal(10, 2)
+
+  @@map("quote_items")
+}
+
+enum PaymentType {
+  DEPOSIT
+  BALANCE
+  FULL
+  REFUND
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+model Payment {
+  id                    String         @id @default(cuid())
+  quoteId               String?
+  quote                 Quote?         @relation(fields: [quoteId], references: [id])
+  orderId               String?
+  order                 CateringOrder? @relation(fields: [orderId], references: [id])
+  type                  PaymentType
+  amount                Decimal        @db.Decimal(10, 2)
+  stripePaymentIntentId String?
+  status                PaymentStatus  @default(PENDING)
+  createdAt             DateTime       @default(now())
+
+  @@map("payments")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// SERVICE AREAS / DELIVERY / AVAILABILITY
+// ─────────────────────────────────────────────────────────────────────────
+
+model ServiceArea {
+  id                String   @id @default(cuid())
+  city              String
+  state             String
+  zipCodes          String[] @default([])
+  active            Boolean  @default(false) // OFF until business confirms coverage
+  deliveryAvailable Boolean  @default(false)
+  notes             String?
+  slug              String   @unique // for /catering/[slug] location pages
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  deliveryFees DeliveryFee[]
+
+  @@map("service_areas")
+}
+
+enum DeliveryFeeType {
+  FLAT
+  PER_MILE
+  FREE_OVER
+}
+
+model DeliveryFee {
+  id              String          @id @default(cuid())
+  serviceAreaId   String
+  serviceArea     ServiceArea     @relation(fields: [serviceAreaId], references: [id], onDelete: Cascade)
+  feeType         DeliveryFeeType
+  amount          Decimal         @db.Decimal(10, 2)
+  minOrderForFree Decimal?        @db.Decimal(10, 2)
+  active          Boolean         @default(true)
+
+  @@map("delivery_fees")
+}
+
+model Availability {
+  id             String   @id @default(cuid())
+  date           DateTime @unique
+  isBlackout     Boolean  @default(false)
+  blackoutReason String?
+  maxEvents      Int?
+  notes          String?
+
+  @@map("availability")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// CONTENT: FAQ / REVIEWS / AWARDS / BLOG / PAGES / MEDIA
+// ─────────────────────────────────────────────────────────────────────────
+
+model FAQ {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String
+  category  String?
+  pages     String[] @default([]) // e.g. ["homepage","catering","corporate-catering"]
+  sortOrder Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("faqs")
+}
+
+model Review {
+  id           String     @id @default(cuid())
+  customerName String
+  rating       Int // 1-5
+  reviewText   String
+  eventType    EventType?
+  source       String? // e.g. "Google", "Facebook", "Direct"
+  sourceUrl    String?
+  eventDate    DateTime?
+  active       Boolean    @default(true)
+  featured     Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  @@map("reviews")
+}
+
+model AwardRecognition {
+  id                   String   @id @default(cuid())
+  organization         String
+  title                String
+  year                 Int?
+  description          String?
+  imageId              String?
+  image                Media?   @relation(fields: [imageId], references: [id])
+  sourceUrl            String?
+  displayHomepage      Boolean  @default(true)
+  displayCateringPages Boolean  @default(true)
+  active               Boolean  @default(true)
+  sortOrder            Int      @default(0)
+  createdAt            DateTime @default(now())
+
+  @@map("awards_recognition")
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+}
+
+model BlogPost {
+  id              String        @id @default(cuid())
+  title           String
+  slug            String        @unique
+  authorId        String?
+  author          User?         @relation(fields: [authorId], references: [id])
+  featuredImageId String?
+  featuredImage   Media?        @relation(fields: [featuredImageId], references: [id])
+  content         String        @db.Text
+  category        String?
+  tags            String[]      @default([])
+  seoTitle        String?
+  seoDescription  String?
+  canonicalUrl    String?
+  ogImageId       String?
+  status          ContentStatus @default(DRAFT)
+  publishedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@map("blog_posts")
+}
+
+model Page {
+  id             String        @id @default(cuid())
+  slug           String        @unique
+  title          String
+  h1             String?
+  content        Json // structured section blocks rendered by the CMS
+  template       String        @default("standard") // standard | location | event-type
+  seoTitle       String?
+  seoDescription String?
+  canonicalUrl   String?
+  ogImageId      String?
+  noindex        Boolean       @default(false)
+  status         ContentStatus @default(DRAFT)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@map("pages")
+}
+
+model Media {
+  id         String   @id @default(cuid())
+  filename   String
+  url        String
+  altText    String?
+  caption    String?
+  category   String?
+  width      Int?
+  height     Int?
+  sizeBytes  Int?
+  uploadedAt DateTime @default(now())
+
+  menuItems MenuItem[]
+  packages  Package[]
+  awards    AwardRecognition[]
+  blogPosts BlogPost[]
+
+  @@map("media")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// SOCIAL / MARKETING / OUTREACH
+// ─────────────────────────────────────────────────────────────────────────
+
+enum SocialPlatform {
+  INSTAGRAM
+  FACEBOOK
+  TIKTOK
+  YOUTUBE
+  YOUTUBE_SHORTS
+}
+
+enum SocialStatus {
+  IDEA
+  DRAFT
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+}
+
+model SocialPost {
+  id            String         @id @default(cuid())
+  platform      SocialPlatform
+  category      String? // food, catering, behind-the-scenes, testimonials, etc.
+  topic         String?
+  hook          String?
+  caption       String?
+  cta           String?
+  hashtags      String[]       @default([])
+  videoConcept  String?
+  shotList      String?
+  status        SocialStatus   @default(IDEA)
+  scheduledDate DateTime?
+  publishedUrl  String?
+  notes         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([scheduledDate])
+  @@map("social_posts")
+}
+
+enum OutreachStatus {
+  PROSPECT
+  CONTACTED
+  RESPONDED
+  INTERESTED
+  LINK_ACQUIRED
+  NOT_INTERESTED
+  FOLLOW_UP
+}
+
+model OutreachContact {
+  id           String         @id @default(cuid())
+  organization String
+  website      String?
+  category     String? // venue, school, church, chamber, blogger, etc.
+  contactName  String?
+  email        String?
+  phone        String?
+  status       OutreachStatus @default(PROSPECT)
+  backlinkUrl  String?
+  ownerId      String?
+  owner        User?          @relation("OutreachOwner", fields: [ownerId], references: [id])
+  notes        String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  activities OutreachActivity[]
+
+  @@map("outreach_contacts")
+}
+
+model OutreachActivity {
+  id                String          @id @default(cuid())
+  outreachContactId String
+  outreachContact   OutreachContact @relation(fields: [outreachContactId], references: [id], onDelete: Cascade)
+  type              String // email, call, meeting
+  date              DateTime        @default(now())
+  notes             String?
+  response          String?
+  followUpDate      DateTime?
+
+  @@map("outreach_activities")
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// SITE SETTINGS (owner-editable business config; source of truth for the
+// AI concierge tools and every "do not fabricate" business fact)
+// ─────────────────────────────────────────────────────────────────────────
+
+model SiteSetting {
+  key         String   @id
+  value       Json
+  description String?
+  updatedAt   DateTime @updatedAt
+
+  @@map("site_settings")
+}

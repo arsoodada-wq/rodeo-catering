@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fdf8f4;
+  --foreground: #241a15;
+
+  /* Brand red, sourced from rodeoburgersandchicken.com's theme-color meta tag */
+  --color-rodeo-50: #fdf1ef;
+  --color-rodeo-100: #fbe0db;
+  --color-rodeo-200: #f7c3ba;
+  --color-rodeo-300: #f19a8b;
+  --color-rodeo-400: #e8705a;
+  --color-rodeo-500: #db594b;
+  --color-rodeo-600: #c1402f;
+  --color-rodeo-700: #9f3226;
+  --color-rodeo-800: #7c2a20;
+  --color-rodeo-900: #5f251d;
+
+  --color-ink-50: #f7f5f3;
+  --color-ink-100: #ece6e1;
+  --color-ink-400: #7a6b62;
+  --color-ink-600: #4a3b34;
+  --color-ink-800: #2e2119;
+  --color-ink-900: #241a15;
+
+  --color-cream-50: #fdf8f4;
+  --color-cream-100: #f8ede2;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  --color-rodeo-50: var(--color-rodeo-50);
+  --color-rodeo-100: var(--color-rodeo-100);
+  --color-rodeo-200: var(--color-rodeo-200);
+  --color-rodeo-300: var(--color-rodeo-300);
+  --color-rodeo-400: var(--color-rodeo-400);
+  --color-rodeo-500: var(--color-rodeo-500);
+  --color-rodeo-600: var(--color-rodeo-600);
+  --color-rodeo-700: var(--color-rodeo-700);
+  --color-rodeo-800: var(--color-rodeo-800);
+  --color-rodeo-900: var(--color-rodeo-900);
+
+  --color-ink-50: var(--color-ink-50);
+  --color-ink-100: var(--color-ink-100);
+  --color-ink-400: var(--color-ink-400);
+  --color-ink-600: var(--color-ink-600);
+  --color-ink-800: var(--color-ink-800);
+  --color-ink-900: var(--color-ink-900);
+
+  --color-cream-50: var(--color-cream-50);
+  --color-cream-100: var(--color-cream-100);
+
+  --font-sans: var(--font-poppins);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
