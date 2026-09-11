@@ -96,10 +96,22 @@ Tracking against the 12 implementation phases from the project brief.
   reload, set a menu item's price and confirmed it persisted, activated a
   package with real pricing and confirmed it appeared — and only it — on
   the public catering page
+- Also added: FAQ management (`/admin/faqs`) — edit, activate/deactivate,
+  add, and delete FAQs, all reflected immediately on the public homepage
+  and catering page (which now read active FAQs from the database instead
+  of a hardcoded list). Building this surfaced a real seeding bug: FAQ rows
+  used a positional id (`seed-faq-0`, `seed-faq-1`, ...) with a
+  non-destructive upsert, so reordering the seed array silently mismatched
+  new content onto old rows' ids instead of updating them — the public
+  page kept looking correct only because it happened to be hitting a
+  fallback path, not real data. Fixed by switching to stable slug ids
+  (`faq-location`, `faq-lead-time`, etc.) and cleaning up the stale rows.
+  Verified create/edit/activate/delete each reflect live on the public
+  site with no rebuild needed
 - Not done: RBAC enforcement beyond login (role field exists on `User` but
   isn't checked anywhere yet), management screens for every other content
-  type in the schema (service areas, FAQs, reviews, awards, blog, pages,
-  media, social, outreach, users)
+  type in the schema (service areas, reviews, awards, blog, pages, media,
+  social, outreach, users)
 
 ## Phase 8 — CMS / SEO 🟡 (SEO fundamentals done)
 

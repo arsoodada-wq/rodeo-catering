@@ -33,6 +33,10 @@ way or (once built) by an existing Super Admin.
   per-person price, guest range, and an Active toggle — **a package only
   appears on the public `/catering` page once Active is checked**, so
   nothing goes live with unconfirmed pricing by accident
+- **FAQs** (`/admin/faqs`): edit any FAQ's question/answer, check "Visible
+  on site" to publish it (unchecked ones stay saved but hidden), add brand
+  new FAQs, or delete ones you don't need. Changes show on the homepage
+  and catering page immediately — no rebuild needed
 
 ## What will eventually live here
 
@@ -40,10 +44,11 @@ way or (once built) by an existing Super Admin.
   field exists on every user but nothing checks it yet, so any logged-in
   user currently has full access)
 - Adding brand-new menu items/packages (today's screens edit existing ones;
-  use `npm run db:studio` to add new rows)
+  use `npm run db:studio` to add new rows — FAQs are the exception, which
+  already supports adding new ones directly)
 - Managing service areas and delivery fees
 - Quotes and orders
-- Managing FAQs, reviews, and awards/recognition
+- Managing reviews and awards/recognition
 - Managing blog posts and landing pages
 - Managing SEO metadata per page
 - Managing social content calendar and outreach CRM

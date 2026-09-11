@@ -1,8 +1,14 @@
 import { MapPin } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { confirmedServiceAreas, business, cateringPolicy } from "@/lib/site-content";
+import { db } from "@/lib/db";
 
-const faqs = [
+type DisplayFaq = { q: string; a: string };
+
+// Fallback used only when the database is unreachable — kept in sync with
+// the confirmed FAQ rows seeded in prisma/seed.ts, which is the real
+// source of truth once the database is connected.
+const fallbackFaqs: DisplayFaq[] = [
   {
     q: "Where are you located, and where do you cater?",
     a: `We're based at ${business.address.street}, ${business.address.city}, ${business.address.state} ${business.address.zip}. We currently confirm catering for ${confirmedServiceAreas.join(", ")} — contact us to check availability for your location.`,
@@ -21,7 +27,22 @@ const faqs = [
   },
 ];
 
-export function ServiceAreaAndFaq() {
+async function getActiveFaqs(): Promise<DisplayFaq[]> {
+  try {
+    const faqs = await db.fAQ.findMany({
+      where: { active: true },
+      orderBy: { sortOrder: "asc" },
+    });
+    if (faqs.length === 0) return fallbackFaqs;
+    return faqs.map((f) => ({ q: f.question, a: f.answer }));
+  } catch {
+    return fallbackFaqs;
+  }
+}
+
+export async function ServiceAreaAndFaq() {
+  const faqs = await getActiveFaqs();
+
   return (
     <section id="faq" className="bg-cream-100 py-20">
       <Container>

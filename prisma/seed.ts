@@ -11,6 +11,7 @@ import { PrismaClient, Prisma } from "../src/generated/prisma/client.ts";
 import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
 import "dotenv/config";
+import { business, confirmedServiceAreas, cateringPolicy } from "../src/lib/site-content.ts";
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const db = new PrismaClient({ adapter });
@@ -292,31 +293,58 @@ async function main() {
     skipDuplicates: true,
   });
 
-  // ── FAQs — real, commonly-needed catering questions. Answers are left as
-  // confirmation placeholders and INACTIVE until the business supplies the
+  // ── FAQs. The first four are answered from facts already confirmed
+  // elsewhere in this file (address/service area, the wizard flow, plant-
+  // based menu options, the 48-hour lead time) — active immediately, and
+  // this is the single source of truth for that copy (the public FAQ
+  // section reads from the database, not a hardcoded list). Everything
+  // else stays an inactive placeholder until the business supplies the
   // real policy, so nothing unverified goes live by accident. ──
-  const faqs: { question: string; answer?: string }[] = [
-    { question: "How far do you cater?" },
-    { question: "How many people can you cater for?" },
-    { question: "Do you offer corporate catering?" },
-    { question: "Do you offer live cooking / on-site cookouts?" },
+  // Stable slug ids (not positional index) so reordering this list can
+  // never silently swap one question's content onto another's row on a
+  // re-seed — that exact bug happened here once already.
+  const faqs: { id: string; question: string; answer?: string }[] = [
     {
-      question: "How far in advance should I book catering?",
-      answer: "We require at least 48 hours notice for all catering orders.",
+      id: "faq-location",
+      question: "Where are you located, and where do you cater?",
+      answer: `We're based at ${business.address.street}, ${business.address.city}, ${business.address.state} ${business.address.zip}. We currently confirm catering for ${confirmedServiceAreas.join(", ")} — contact us to check availability for your location.`,
     },
-    { question: "Do you offer delivery?" },
-    { question: "Can I customize a catering package?" },
-    { question: "Do you cater weddings?" },
-    { question: "Do you cater school events?" },
-    { question: "Do you cater large events (200+ guests)?" },
-    { question: "What food options are available (vegan, halal, kosher, allergies)?" },
-    { question: "How does catering pricing work?" },
+    {
+      id: "faq-quote-process",
+      question: "How do I get a catering quote?",
+      answer:
+        "Use the catering builder on our catering page to tell us about your event, or call us directly. We'll put together a detailed quote based on your guest count and menu selections.",
+    },
+    {
+      id: "faq-dietary",
+      question: "Can you accommodate dietary restrictions?",
+      answer:
+        "We offer plant-based options on our menu. For specific allergy or dietary needs, please note them when requesting your quote so our team can confirm what's possible.",
+    },
+    {
+      id: "faq-lead-time",
+      question: "How far in advance should I book catering?",
+      answer: `We require at least ${cateringPolicy.minLeadTimeHours} hours notice for all catering orders. For larger events, booking further ahead helps us confirm availability.`,
+    },
+    { id: "faq-guest-capacity", question: "How many people can you cater for?" },
+    { id: "faq-corporate", question: "Do you offer corporate catering?" },
+    { id: "faq-live-cooking", question: "Do you offer live cooking / on-site cookouts?" },
+    { id: "faq-delivery", question: "Do you offer delivery?" },
+    { id: "faq-customize", question: "Can I customize a catering package?" },
+    { id: "faq-weddings", question: "Do you cater weddings?" },
+    { id: "faq-school", question: "Do you cater school events?" },
+    { id: "faq-large-events", question: "Do you cater large events (200+ guests)?" },
+    {
+      id: "faq-food-options",
+      question: "What food options are available (vegan, halal, kosher, allergies)?",
+    },
+    { id: "faq-pricing", question: "How does catering pricing work?" },
   ];
   for (const [i, faq] of faqs.entries()) {
     await db.fAQ.upsert({
-      where: { id: `seed-faq-${i}` },
+      where: { id: faq.id },
       create: {
-        id: `seed-faq-${i}`,
+        id: faq.id,
         question: faq.question,
         answer: faq.answer ?? "REQUIRES BUSINESS CONFIRMATION",
         pages: ["catering"],
