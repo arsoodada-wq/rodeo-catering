@@ -9,24 +9,38 @@ import {
   Star,
   Trophy,
   MapPin,
+  ShieldCheck,
   LogOut,
 } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
+import { PERMISSIONS, roleHasPermission, type PermissionKey } from "@/lib/permissions";
 
-const navLinks = [
+const navLinks: { href: string; label: string; icon: typeof LayoutDashboard; permission?: PermissionKey }[] = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/leads", label: "Leads", icon: Users2 },
-  { href: "/admin/quotes", label: "Quotes", icon: FileText },
-  { href: "/admin/menu", label: "Menu & Pricing", icon: UtensilsCrossed },
-  { href: "/admin/packages", label: "Packages", icon: Package },
-  { href: "/admin/service-areas", label: "Service Areas", icon: MapPin },
-  { href: "/admin/faqs", label: "FAQs", icon: HelpCircle },
-  { href: "/admin/reviews", label: "Reviews", icon: Star },
-  { href: "/admin/awards", label: "Awards", icon: Trophy },
+  { href: "/admin/leads", label: "Leads", icon: Users2, permission: PERMISSIONS.LEADS_MANAGE },
+  { href: "/admin/quotes", label: "Quotes", icon: FileText, permission: PERMISSIONS.QUOTES_MANAGE },
+  { href: "/admin/menu", label: "Menu & Pricing", icon: UtensilsCrossed, permission: PERMISSIONS.PRICING_MANAGE },
+  { href: "/admin/packages", label: "Packages", icon: Package, permission: PERMISSIONS.PRICING_MANAGE },
+  { href: "/admin/service-areas", label: "Service Areas", icon: MapPin, permission: PERMISSIONS.SERVICE_AREAS_MANAGE },
+  { href: "/admin/faqs", label: "FAQs", icon: HelpCircle, permission: PERMISSIONS.CONTENT_MANAGE },
+  { href: "/admin/reviews", label: "Reviews", icon: Star, permission: PERMISSIONS.CONTENT_MANAGE },
+  { href: "/admin/awards", label: "Awards", icon: Trophy, permission: PERMISSIONS.CONTENT_MANAGE },
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
+  const role = (session?.user as { role?: string } | undefined)?.role ?? "STAFF";
+  const isSuperAdmin = role === "SUPER_ADMIN";
+
+  const visibleLinks = [];
+  for (const link of navLinks) {
+    if (!link.permission || (await roleHasPermission(role, link.permission))) {
+      visibleLinks.push(link);
+    }
+  }
+  if (isSuperAdmin) {
+    visibleLinks.push({ href: "/admin/permissions", label: "Permissions", icon: ShieldCheck });
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -37,7 +51,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
 
         <nav className="mt-10 flex-1 space-y-1">
-          {navLinks.map((link) => (
+          {visibleLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}

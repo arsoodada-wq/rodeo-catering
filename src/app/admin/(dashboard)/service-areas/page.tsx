@@ -2,6 +2,8 @@ import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
 import { ServiceAreaRow } from "@/components/admin/ServiceAreaRow";
 import { NewServiceAreaForm } from "@/components/admin/NewServiceAreaForm";
+import { AccessRestricted } from "@/components/admin/AccessRestricted";
+import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
 
 async function getServiceAreas() {
   try {
@@ -13,6 +15,10 @@ async function getServiceAreas() {
 }
 
 export default async function AdminServiceAreasPage() {
+  if (!(await hasPageAccess(PERMISSIONS.SERVICE_AREAS_MANAGE))) {
+    return <AccessRestricted label="service areas" />;
+  }
+
   const data = await getServiceAreas();
 
   if (!data.ok) {

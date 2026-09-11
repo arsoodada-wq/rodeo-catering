@@ -37,6 +37,47 @@ async function main() {
     );
   }
 
+  // ── Permissions + default role assignments. SUPER_ADMIN always has every
+  // permission (hardcoded in src/lib/permissions.ts, not stored here) so
+  // this table can never lock every admin out. These defaults are a
+  // reasonable technical starting point, not a business-confirmed policy —
+  // adjust who has what at /admin/permissions without touching code. ──
+  const permissionDefs = [
+    { key: "leads.manage", label: "Manage leads", description: "View and update catering lead status." },
+    { key: "quotes.manage", label: "Manage quotes", description: "Create quotes for leads." },
+    { key: "pricing.manage", label: "Manage pricing", description: "Edit menu item and package prices." },
+    { key: "service_areas.manage", label: "Manage service areas", description: "Activate/deactivate cities and delivery." },
+    { key: "content.manage", label: "Manage content", description: "Edit FAQs, reviews, and awards." },
+  ];
+  const permissionRecords = new Map<string, string>();
+  for (const p of permissionDefs) {
+    const rec = await db.permission.upsert({
+      where: { key: p.key },
+      create: p,
+      update: { label: p.label, description: p.description },
+    });
+    permissionRecords.set(p.key, rec.id);
+  }
+
+  const defaultRolePermissions: { role: "MANAGER" | "STAFF" | "MARKETING"; keys: string[] }[] = [
+    {
+      role: "MANAGER",
+      keys: ["leads.manage", "quotes.manage", "pricing.manage", "service_areas.manage", "content.manage"],
+    },
+    { role: "STAFF", keys: ["leads.manage", "quotes.manage"] },
+    { role: "MARKETING", keys: ["content.manage"] },
+  ];
+  for (const { role, keys } of defaultRolePermissions) {
+    for (const key of keys) {
+      const permissionId = permissionRecords.get(key)!;
+      await db.rolePermission.upsert({
+        where: { role_permissionId: { role, permissionId } },
+        create: { role, permissionId },
+        update: {},
+      });
+    }
+  }
+
   // ── Site settings (single source of truth for confirmed business facts) ──
   await db.siteSetting.createMany({
     data: [

@@ -2,8 +2,8 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { PERMISSIONS, requirePermission } from "@/lib/permissions";
 
 const updateSchema = z.object({
   id: z.string().min(1),
@@ -19,9 +19,9 @@ function revalidatePublicPages() {
 }
 
 export async function updateFaq(input: z.infer<typeof updateSchema>) {
-  const session = await auth();
-  if (!session?.user) {
-    return { ok: false as const, error: "Not authenticated." };
+  const permission = await requirePermission(PERMISSIONS.CONTENT_MANAGE);
+  if (!permission.ok) {
+    return { ok: false as const, error: permission.error };
   }
 
   const parsed = updateSchema.safeParse(input);
@@ -51,9 +51,9 @@ const createSchema = z.object({
 });
 
 export async function createFaq(input: z.infer<typeof createSchema>) {
-  const session = await auth();
-  if (!session?.user) {
-    return { ok: false as const, error: "Not authenticated." };
+  const permission = await requirePermission(PERMISSIONS.CONTENT_MANAGE);
+  if (!permission.ok) {
+    return { ok: false as const, error: permission.error };
   }
 
   const parsed = createSchema.safeParse(input);
@@ -82,9 +82,9 @@ export async function createFaq(input: z.infer<typeof createSchema>) {
 const deleteSchema = z.object({ id: z.string().min(1) });
 
 export async function deleteFaq(input: z.infer<typeof deleteSchema>) {
-  const session = await auth();
-  if (!session?.user) {
-    return { ok: false as const, error: "Not authenticated." };
+  const permission = await requirePermission(PERMISSIONS.CONTENT_MANAGE);
+  if (!permission.ok) {
+    return { ok: false as const, error: permission.error };
   }
 
   const parsed = deleteSchema.safeParse(input);

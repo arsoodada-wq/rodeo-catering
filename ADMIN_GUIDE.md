@@ -4,6 +4,32 @@ _Partial — login, leads, and pricing work today and have been verified
 against a real database; most other management screens listed below don't
 exist yet (see `PROJECT_STATUS.md`, Phase 7)._
 
+## Roles and permissions
+
+Every admin account has one of four roles: **Super Admin**, **Manager**,
+**Staff**, or **Marketing**. Super Admin always has full access to
+everything (hardcoded — this can't be changed or accidentally revoked). What
+the other three roles can do is controlled by real database rows, editable
+at **`/admin/permissions`** (Super Admin only) — no code change or redeploy
+needed to change who can do what.
+
+Default assignments (a reasonable starting point set during development,
+**not a business-confirmed policy** — adjust freely):
+
+| Permission | Manager | Staff | Marketing |
+| --- | --- | --- | --- |
+| Manage leads | ✅ | ✅ | |
+| Manage quotes | ✅ | ✅ | |
+| Manage pricing (menu & packages) | ✅ | | |
+| Manage service areas | ✅ | | |
+| Manage content (FAQs, reviews, awards) | ✅ | | ✅ |
+
+A user who lacks a permission sees the sidebar link disappear entirely, and
+is shown a plain "Access restricted" message if they navigate to the URL
+directly. Every server-side save/create/delete action re-checks the
+permission too — this isn't just a hidden button, it's enforced on the
+backend regardless of what the UI shows.
+
 ## Logging in
 
 1. Make sure `DATABASE_URL`, `AUTH_SECRET`, and `ADMIN_EMAIL`/`ADMIN_PASSWORD`
@@ -63,9 +89,9 @@ way or (once built) by an existing Super Admin.
 
 ## What will eventually live here
 
-- Role enforcement (Super Admin / Manager / Staff / Marketing — the `role`
-  field exists on every user but nothing checks it yet, so any logged-in
-  user currently has full access)
+- A screen for creating new admin user accounts (today, `npm run db:studio`
+  is the only way to add one — see "Roles and permissions" above for what
+  each role can already do once it exists)
 - Adding brand-new menu items/packages (today's screens edit existing ones;
   use `npm run db:studio` to add new rows — FAQs, Reviews, Awards, and
   Service Areas are the exception, which already support adding new

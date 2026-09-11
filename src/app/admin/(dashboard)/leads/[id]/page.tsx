@@ -5,12 +5,19 @@ import { db } from "@/lib/db";
 import { formatEventDate } from "@/lib/format";
 import { LeadStatusSelect } from "@/components/admin/LeadStatusSelect";
 import { QuoteBuilder } from "@/components/admin/QuoteBuilder";
+import { AccessRestricted } from "@/components/admin/AccessRestricted";
+import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
 
 export default async function AdminLeadDetailPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
+  if (!(await hasPageAccess(PERMISSIONS.LEADS_MANAGE))) {
+    return <AccessRestricted label="leads" />;
+  }
+  const canManageQuotes = await hasPageAccess(PERMISSIONS.QUOTES_MANAGE);
+
   const { id } = await params;
 
   const lead = await db.lead.findUnique({
@@ -147,14 +154,18 @@ export default async function AdminLeadDetailPage({
           )}
         </div>
 
-        <QuoteBuilder
-          leadId={lead.id}
-          defaultItems={foodSelections.map((item) => ({
-            description: item,
-            quantity: lead.guestCount,
-            unitPrice: 0,
-          }))}
-        />
+        {canManageQuotes ? (
+          <QuoteBuilder
+            leadId={lead.id}
+            defaultItems={foodSelections.map((item) => ({
+              description: item,
+              quantity: lead.guestCount,
+              unitPrice: 0,
+            }))}
+          />
+        ) : (
+          <AccessRestricted label="quotes" />
+        )}
       </div>
     </div>
   );

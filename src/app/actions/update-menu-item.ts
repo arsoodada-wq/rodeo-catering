@@ -2,8 +2,8 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { PERMISSIONS, requirePermission } from "@/lib/permissions";
 
 const schema = z.object({
   id: z.string().min(1),
@@ -16,9 +16,9 @@ const schema = z.object({
 });
 
 export async function updateMenuItem(input: z.infer<typeof schema>) {
-  const session = await auth();
-  if (!session?.user) {
-    return { ok: false as const, error: "Not authenticated." };
+  const permission = await requirePermission(PERMISSIONS.PRICING_MANAGE);
+  if (!permission.ok) {
+    return { ok: false as const, error: permission.error };
   }
 
   const parsed = schema.safeParse(input);

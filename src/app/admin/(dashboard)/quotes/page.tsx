@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
+import { AccessRestricted } from "@/components/admin/AccessRestricted";
+import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
 
 async function getQuotes() {
   try {
@@ -15,6 +17,10 @@ async function getQuotes() {
 }
 
 export default async function AdminQuotesPage() {
+  if (!(await hasPageAccess(PERMISSIONS.QUOTES_MANAGE))) {
+    return <AccessRestricted label="quotes" />;
+  }
+
   const data = await getQuotes();
 
   if (!data.ok) {

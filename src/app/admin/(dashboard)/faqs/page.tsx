@@ -2,6 +2,8 @@ import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
 import { FaqRow } from "@/components/admin/FaqRow";
 import { NewFaqForm } from "@/components/admin/NewFaqForm";
+import { AccessRestricted } from "@/components/admin/AccessRestricted";
+import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
 
 async function getFaqs() {
   try {
@@ -13,6 +15,10 @@ async function getFaqs() {
 }
 
 export default async function AdminFaqsPage() {
+  if (!(await hasPageAccess(PERMISSIONS.CONTENT_MANAGE))) {
+    return <AccessRestricted label="FAQs" />;
+  }
+
   const data = await getFaqs();
 
   if (!data.ok) {

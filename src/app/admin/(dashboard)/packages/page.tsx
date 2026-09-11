@@ -1,6 +1,8 @@
 import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
 import { PackageRow } from "@/components/admin/PackageRow";
+import { AccessRestricted } from "@/components/admin/AccessRestricted";
+import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
 
 async function getPackages() {
   try {
@@ -12,6 +14,10 @@ async function getPackages() {
 }
 
 export default async function AdminPackagesPage() {
+  if (!(await hasPageAccess(PERMISSIONS.PRICING_MANAGE))) {
+    return <AccessRestricted label="packages" />;
+  }
+
   const data = await getPackages();
 
   if (!data.ok) {

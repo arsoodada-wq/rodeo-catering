@@ -3,6 +3,8 @@ import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
 import { formatEventDate } from "@/lib/format";
 import { LeadStatusSelect } from "@/components/admin/LeadStatusSelect";
+import { AccessRestricted } from "@/components/admin/AccessRestricted";
+import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
 
 async function getLeads() {
   try {
@@ -14,6 +16,10 @@ async function getLeads() {
 }
 
 export default async function AdminLeadsPage() {
+  if (!(await hasPageAccess(PERMISSIONS.LEADS_MANAGE))) {
+    return <AccessRestricted label="leads" />;
+  }
+
   const data = await getLeads();
 
   if (!data.ok) {

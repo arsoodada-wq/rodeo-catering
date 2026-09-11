@@ -2,6 +2,8 @@ import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
 import { ReviewRow } from "@/components/admin/ReviewRow";
 import { NewReviewForm } from "@/components/admin/NewReviewForm";
+import { AccessRestricted } from "@/components/admin/AccessRestricted";
+import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
 
 async function getReviews() {
   try {
@@ -13,6 +15,10 @@ async function getReviews() {
 }
 
 export default async function AdminReviewsPage() {
+  if (!(await hasPageAccess(PERMISSIONS.CONTENT_MANAGE))) {
+    return <AccessRestricted label="reviews" />;
+  }
+
   const data = await getReviews();
 
   if (!data.ok) {

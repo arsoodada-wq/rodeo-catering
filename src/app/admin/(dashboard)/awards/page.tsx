@@ -2,6 +2,8 @@ import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
 import { AwardRow } from "@/components/admin/AwardRow";
 import { NewAwardForm } from "@/components/admin/NewAwardForm";
+import { AccessRestricted } from "@/components/admin/AccessRestricted";
+import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
 
 async function getAwards() {
   try {
@@ -13,6 +15,10 @@ async function getAwards() {
 }
 
 export default async function AdminAwardsPage() {
+  if (!(await hasPageAccess(PERMISSIONS.CONTENT_MANAGE))) {
+    return <AccessRestricted label="awards" />;
+  }
+
   const data = await getAwards();
 
   if (!data.ok) {

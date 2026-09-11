@@ -171,9 +171,33 @@ Tracking against the 12 implementation phases from the project brief.
   by always deriving that heading from the real business address, with
   active service areas only ever listed as "Also serving," never as the
   home base
-- Not done: RBAC enforcement beyond login (role field exists on `User` but
-  isn't checked anywhere yet), management screens for every other content
-  type in the schema (blog, pages, media, social, outreach, users). Note:
+- Done: RBAC enforcement. The schema already had `Permission`/`RolePermission`
+  tables built for exactly this ("grant/revoke capabilities without a code
+  change") but nothing used them — wired them up instead of hardcoding role
+  checks. Super Admin always has full access (hardcoded, can't be revoked or
+  misconfigured). Manager/Staff/Marketing access is controlled by real rows,
+  editable at `/admin/permissions` (Super Admin only) via a checkbox matrix
+  that writes straight to the database. Every mutating server action
+  (leads, quotes, menu, packages, service areas, FAQs, reviews, awards) now
+  checks the signed-in user's permission before touching the database — not
+  just a hidden sidebar link, an actual backend check. Pages a role can't
+  use show "Access restricted" instead of the editor, whether reached via
+  the sidebar (which also hides links they can't use) or a direct URL.
+  Seeded a reasonable default split (Manager: everything; Staff: leads +
+  quotes; Marketing: content) and documented in `ADMIN_GUIDE.md` as a
+  developer default, not a business-confirmed policy
+- Verified end-to-end: created a real STAFF-role test account, confirmed its
+  sidebar only showed Dashboard/Leads/Quotes, confirmed navigating directly
+  to `/admin/menu` and `/admin/permissions` both showed "Access restricted"
+  rather than the real screen, confirmed it could still fully use Leads
+  (its actual granted permission), then toggled Staff's service-areas
+  permission on in the matrix as Super Admin, confirmed the change hit the
+  database directly via `psql`, confirmed it survived a full page reload
+  (not just optimistic client state), then reverted it and deleted the test
+  account
+- Not done: management screens for every other content type in the schema
+  (blog, pages, media, social, outreach), a UI for creating new admin user
+  accounts (use `npm run db:studio` for now). Note:
   the "Where are you located" FAQ answer is free text (admin-owned, not
   templated), so it will drift from the real service-area list unless
   manually updated — the Service Areas admin page reminds admins of this

@@ -1,6 +1,8 @@
 import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
 import { MenuItemRow } from "@/components/admin/MenuItemRow";
+import { AccessRestricted } from "@/components/admin/AccessRestricted";
+import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
 
 async function getMenu() {
   try {
@@ -16,6 +18,10 @@ async function getMenu() {
 }
 
 export default async function AdminMenuPage() {
+  if (!(await hasPageAccess(PERMISSIONS.PRICING_MANAGE))) {
+    return <AccessRestricted label="menu pricing" />;
+  }
+
   const data = await getMenu();
 
   if (!data.ok) {

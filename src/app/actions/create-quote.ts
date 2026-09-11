@@ -2,8 +2,8 @@
 
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { PERMISSIONS, requirePermission } from "@/lib/permissions";
 
 const itemSchema = z.object({
   description: z.string().min(1, "Every line item needs a description"),
@@ -25,8 +25,8 @@ const createQuoteSchema = z.object({
 export type CreateQuoteInput = z.infer<typeof createQuoteSchema>;
 
 export async function createQuote(input: CreateQuoteInput) {
-  const session = await auth();
-  if (!session?.user) return { ok: false as const, error: "Not authenticated." };
+  const permission = await requirePermission(PERMISSIONS.QUOTES_MANAGE);
+  if (!permission.ok) return { ok: false as const, error: permission.error };
 
   const parsed = createQuoteSchema.safeParse(input);
   if (!parsed.success) {
