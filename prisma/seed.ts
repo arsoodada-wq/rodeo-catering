@@ -233,15 +233,15 @@ async function main() {
 
   // ── Package shells (structure only — no invented pricing) ──
   const packages = [
-    { slug: "office-lunch", name: "Office Lunch Package", eventTypes: ["CORPORATE" as const] },
-    { slug: "birthday-party", name: "Birthday Party Package", eventTypes: ["BIRTHDAY" as const] },
-    { slug: "graduation", name: "Graduation Package", eventTypes: ["GRADUATION" as const] },
-    { slug: "family-party", name: "Family Party Package", eventTypes: ["FAMILY_GATHERING" as const] },
-    { slug: "corporate", name: "Corporate Package", eventTypes: ["CORPORATE" as const] },
-    { slug: "game-day", name: "Game Day Package", eventTypes: ["SPORTS_TEAM" as const] },
-    { slug: "big-event", name: "Big Event Package", eventTypes: ["OTHER" as const] },
-    { slug: "rodeo-signature", name: "Rodeo Signature Package", eventTypes: [] },
-    { slug: "live-cookout", name: "Live Cookout Package", eventTypes: [] },
+    { slug: "office-lunch", name: "Office Lunch Package", eventTypes: ["CORPORATE" as const], description: "Individually-ready meals for meetings and workdays." },
+    { slug: "birthday-party", name: "Birthday Party Package", eventTypes: ["BIRTHDAY" as const], description: "Crowd-pleasing favorites built for celebrating." },
+    { slug: "graduation", name: "Graduation Package", eventTypes: ["GRADUATION" as const], description: "Feed an open house or grad party with ease." },
+    { slug: "family-party", name: "Family Party Package", eventTypes: ["FAMILY_GATHERING" as const], description: "Reunions, holidays, and backyard get-togethers." },
+    { slug: "corporate", name: "Corporate Package", eventTypes: ["CORPORATE" as const], description: "Larger company events and appreciation days." },
+    { slug: "game-day", name: "Game Day Package", eventTypes: ["SPORTS_TEAM" as const], description: "Tailgates, tournaments, and team celebrations." },
+    { slug: "big-event", name: "Big Event Package", eventTypes: ["OTHER" as const], description: "200+ guests — full-scale event catering." },
+    { slug: "rodeo-signature", name: "Rodeo Signature Package", eventTypes: [], description: "Our full lineup of fan-favorite items." },
+    { slug: "live-cookout", name: "Live Cookout Package", eventTypes: [], description: "Cooked fresh, right at your event." },
   ];
   for (const [i, p] of packages.entries()) {
     await db.package.upsert({
@@ -249,6 +249,7 @@ async function main() {
       create: {
         slug: p.slug,
         name: p.name,
+        description: p.description,
         eventTypes: p.eventTypes,
         sortOrder: i,
         active: false, // stays hidden from the public site until priced

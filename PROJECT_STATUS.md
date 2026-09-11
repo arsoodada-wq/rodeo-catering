@@ -62,28 +62,44 @@ Tracking against the 12 implementation phases from the project brief.
   and update status (`/admin/leads`)
 - Not done: quote generation/PDF, follow-up workflow, editing lead details
 
-## Phase 7 — Admin Dashboard 🟡 (auth + first screens)
+## Phase 7 — Admin Dashboard 🟡 (auth + pricing screens)
 
 - Done: Auth.js v5 credentials login (`/admin/login`), JWT sessions, first
   admin bootstrapped via `ADMIN_EMAIL`/`ADMIN_PASSWORD` in `prisma/seed.ts`.
-  Dashboard home (lead counts by status, recent leads) and a full leads
-  list with inline status updates
-- Fixed two real bugs while verifying this in the browser: (1) the route
-  gate file was at the project root instead of `src/` (Next.js requires it
-  co-located with `src/app` in a src-dir project) and was silently never
-  running; (2) the gate relied on Auth.js's `authorized` callback, which
-  let requests through when `AUTH_SECRET` was unset instead of blocking —
-  rewrote it to check `req.auth` directly so it fails closed. Also renamed
-  `middleware.ts` → `src/proxy.ts` per Next.js 16's renamed convention
+  Dashboard home (lead counts by status, recent leads), a full leads list
+  with inline status updates, and **working pricing editors**
+  (`/admin/menu`, `/admin/packages`) — set a price/mark a package active and
+  it goes live on the public `/catering` page immediately
+- Fixed three real bugs, all caught by testing against a real database
+  rather than just reading the code:
+  1. The route gate file was at the project root instead of `src/` (Next.js
+     requires it co-located with `src/app` in a src-dir project) and was
+     silently never running.
+  2. The gate relied on Auth.js's `authorized` callback, which let requests
+     through when `AUTH_SECRET` was unset instead of blocking — rewrote it
+     to check `req.auth` directly so it fails closed. Also renamed
+     `middleware.ts` → `src/proxy.ts` per Next.js 16's renamed convention.
+  3. Event dates displayed one day early in the admin leads list — a date
+     stored as UTC midnight was being formatted in the server's local
+     timezone. Fixed with a shared `formatEventDate` helper
+     (`src/lib/format.ts`) that always formats in UTC.
+- Verified end-to-end against a real local PostgreSQL database (installed
+  in this environment specifically for this): logged in, submitted a real
+  catering wizard lead, confirmed it appeared in `/admin/leads` with the
+  correct date, updated its status and confirmed it persisted after
+  reload, set a menu item's price and confirmed it persisted, activated a
+  package with real pricing and confirmed it appeared — and only it — on
+  the public catering page
 - Not done: RBAC enforcement beyond login (role field exists on `User` but
   isn't checked anywhere yet), management screens for every other content
-  type in the schema (menu, packages, service areas, FAQs, reviews, awards,
-  blog, pages, media, social, outreach, users)
+  type in the schema (service areas, FAQs, reviews, awards, blog, pages,
+  media, social, outreach, users)
 
-## Phase 8 — CMS / SEO ⬜ not started
+## Phase 8 — CMS / SEO 🟡 (SEO fundamentals done)
 
-Page editor, blog, SEO controls, sitemap/robots, structured data beyond the
-homepage.
+- Done: `sitemap.xml`, `robots.txt`, `CateringBusiness` JSON-LD structured
+  data (verified facts only — see `SEO_GUIDE.md`)
+- Not done: page editor, blog CMS, per-page SEO editing UI
 
 ## Phase 9 — Marketing ⬜ not started
 

@@ -1,5 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
+import { formatEventDate } from "@/lib/format";
 import { LeadStatusSelect } from "@/components/admin/LeadStatusSelect";
 
 async function getLeads() {
@@ -62,7 +63,7 @@ export default async function AdminLeadsPage() {
                   <td className="p-4 text-ink-600">{lead.eventType}</td>
                   <td className="p-4 text-ink-600">{lead.guestCount}</td>
                   <td className="p-4 text-ink-600">
-                    {lead.eventDate ? new Date(lead.eventDate).toLocaleDateString() : "—"}
+                    {lead.eventDate ? formatEventDate(lead.eventDate) : "—"}
                   </td>
                   <td className="p-4 text-ink-600">{lead.city || "—"}</td>
                   <td className="p-4">

@@ -1,7 +1,8 @@
 # Admin Guide
 
-_Partial — logging in and viewing leads work today; most management
-screens listed below don't exist yet (see `PROJECT_STATUS.md`, Phase 7)._
+_Partial — login, leads, and pricing work today and have been verified
+against a real database; most other management screens listed below don't
+exist yet (see `PROJECT_STATUS.md`, Phase 7)._
 
 ## Logging in
 
@@ -24,13 +25,22 @@ way or (once built) by an existing Super Admin.
 - **Leads** (`/admin/leads`): full list of catering wizard submissions,
   with a dropdown to update each lead's status (New, Contacted, Quote
   Sent, Follow-Up, Confirmed, Completed, Lost)
+- **Menu & Pricing** (`/admin/menu`): every menu item grouped by category —
+  set a price, choose flat vs. per-person pricing, and toggle availability.
+  Items with no price still show on the site, marked "available on
+  request," so a customer is never shown a price nobody set
+- **Packages** (`/admin/packages`): each catering package's base price,
+  per-person price, guest range, and an Active toggle — **a package only
+  appears on the public `/catering` page once Active is checked**, so
+  nothing goes live with unconfirmed pricing by accident
 
 ## What will eventually live here
 
 - Role enforcement (Super Admin / Manager / Staff / Marketing — the `role`
   field exists on every user but nothing checks it yet, so any logged-in
   user currently has full access)
-- Managing menu items, packages, and pricing
+- Adding brand-new menu items/packages (today's screens edit existing ones;
+  use `npm run db:studio` to add new rows)
 - Managing service areas and delivery fees
 - Quotes and orders
 - Managing FAQs, reviews, and awards/recognition
