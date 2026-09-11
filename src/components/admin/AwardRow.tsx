@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { Check, Loader2, Trash2 } from "lucide-react";
 import { updateAward, deleteAward } from "@/app/actions/update-award";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/ToastProvider";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -37,6 +39,8 @@ export function AwardRow({
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleted, setDeleted] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const { showToast } = useToast();
 
   function save() {
     setError(null);
@@ -62,11 +66,16 @@ export function AwardRow({
   }
 
   function remove() {
-    if (!confirm("Delete this award/recognition? This can't be undone.")) return;
     startTransition(async () => {
       const res = await deleteAward({ id });
-      if (res.ok) setDeleted(true);
-      else setError(res.error);
+      if (res.ok) {
+        setDeleted(true);
+        showToast("Award deleted.", "success");
+      } else {
+        setError(res.error);
+        showToast(res.error, "error");
+      }
+      setConfirmOpen(false);
     });
   }
 
@@ -137,7 +146,7 @@ export function AwardRow({
 
       <div className="mt-3 flex items-center justify-end gap-2">
         <button
-          onClick={remove}
+          onClick={() => setConfirmOpen(true)}
           disabled={pending}
           className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-ink-400 hover:text-rodeo-600"
         >
@@ -161,6 +170,16 @@ export function AwardRow({
         </button>
       </div>
       {error && <p className="mt-2 text-xs text-rodeo-600">{error}</p>}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete this award?"
+        description="This removes it from wherever it's currently displayed. This can't be undone."
+        confirmLabel="Delete"
+        pending={pending}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={remove}
+      />
     </div>
   );
 }

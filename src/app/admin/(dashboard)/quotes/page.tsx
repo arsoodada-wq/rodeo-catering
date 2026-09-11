@@ -3,6 +3,8 @@ import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
 import { AccessRestricted } from "@/components/admin/AccessRestricted";
 import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
+import { Badge } from "@/components/ui/Badge";
+import { QUOTE_STATUS_TONES } from "@/lib/status";
 
 async function getQuotes() {
   try {
@@ -83,9 +85,7 @@ export default async function AdminQuotesPage() {
                   </td>
                   <td className="p-4 text-ink-600">${quote.total.toString()}</td>
                   <td className="p-4">
-                    <span className="rounded-full bg-cream-100 px-3 py-1 text-xs font-semibold text-ink-600">
-                      {quote.status}
-                    </span>
+                    <Badge tone={QUOTE_STATUS_TONES[quote.status] ?? "neutral"}>{quote.status}</Badge>
                   </td>
                   <td className="p-4 text-ink-400">
                     {quote.sentAt ? new Date(quote.sentAt).toLocaleDateString() : "—"}

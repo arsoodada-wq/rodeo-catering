@@ -22,12 +22,42 @@ Tracking against the 12 implementation phases from the project brief.
 - Resolved Prisma 7's driver-adapter architecture (`src/lib/db.ts`,
   `prisma.config.ts`)
 
-## Phase 3 — Design System 🟡 (started)
+## Phase 3 — Design System ✅
 
 - Done: Tailwind v4 theme tokens (brand palette off `#db594b`, Poppins),
-  `Button`, `Container` primitives
-- Not done: full component library (cards, modals, form inputs, toasts),
-  documented in a style guide page
+  and a full component library in `src/components/ui/`:
+  - `Button.tsx`, `Container.tsx` (already existed)
+  - `Card.tsx` — the base container now used throughout the admin dashboard
+  - `Badge.tsx` — status pills with a tone system (neutral/info/success/
+    warning/danger), paired with a shared tone map in `src/lib/status.ts`
+    so lead and quote statuses render consistently everywhere they appear
+  - `Input.tsx`, `Textarea.tsx`, `Select.tsx`, `Checkbox.tsx` — thin
+    wrappers around the existing `.input` style with optional
+    label/hint/error props
+  - `Modal.tsx` and `ConfirmDialog.tsx` — an accessible dialog (portal,
+    Escape to close, click-outside to close) with a delete-confirmation
+    convenience wrapper on top
+  - `ToastProvider.tsx` / `useToast()` — mounted once in the root layout,
+    usable anywhere via a hook, no prop drilling
+- Documented all of it on `/style-guide` (noindexed, not linked from
+  anywhere public) — colors, typography scale, every button/badge/card
+  variant, form inputs, and live interactive demos of the modal and toast
+- Real adoption, not just a demo page: replaced the browser's built-in
+  `confirm()` popup — which can't be styled and blocks the JS thread —
+  with `ConfirmDialog` in all four places that used it (Service Areas,
+  Reviews, Awards, FAQs), each now also firing a success/error toast on
+  the result. Replaced the flat, uncolored status pills on the Dashboard,
+  Quotes list, and a lead's Quotes section with color-coded `Badge`s
+- Verified end-to-end: exercised every component on `/style-guide` in the
+  browser (color swatches, badge tones, opened both the plain modal and
+  the confirm dialog, triggered all three toast tones), then created a
+  real throwaway FAQ in the live admin dashboard and deleted it through
+  the new `ConfirmDialog` + toast flow to confirm the migration didn't
+  just look right but actually still deletes. Re-verified the whole
+  style guide page against a real production build (`next build &&
+  next start`) since this project has a history of bugs that only
+  surfaced there — it prerenders statically and the modal/toast/hydration
+  all worked identically to dev mode
 
 ## Phase 4 — Public Website 🟡 (all core pages live)
 

@@ -3,6 +3,8 @@
 import { useState, useTransition } from "react";
 import { Check, Loader2, Trash2 } from "lucide-react";
 import { updateServiceArea, deleteServiceArea } from "@/app/actions/update-service-area";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/ToastProvider";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -22,6 +24,8 @@ export function ServiceAreaRow({ id, city, state, notes, active, deliveryAvailab
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deleted, setDeleted] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const { showToast } = useToast();
 
   function save() {
     setError(null);
@@ -43,11 +47,16 @@ export function ServiceAreaRow({ id, city, state, notes, active, deliveryAvailab
   }
 
   function remove() {
-    if (!confirm(`Delete ${city}, ${state} from the service area list?`)) return;
     startTransition(async () => {
       const res = await deleteServiceArea({ id });
-      if (res.ok) setDeleted(true);
-      else setError(res.error);
+      if (res.ok) {
+        setDeleted(true);
+        showToast(`Deleted ${city}, ${state}.`, "success");
+      } else {
+        setError(res.error);
+        showToast(res.error, "error");
+      }
+      setConfirmOpen(false);
     });
   }
 
@@ -86,7 +95,7 @@ export function ServiceAreaRow({ id, city, state, notes, active, deliveryAvailab
         </label>
 
         <button
-          onClick={remove}
+          onClick={() => setConfirmOpen(true)}
           disabled={pending}
           className="flex items-center gap-1 rounded-full px-3 py-1.5 text-xs font-semibold text-ink-400 hover:text-rodeo-600"
         >
@@ -110,6 +119,16 @@ export function ServiceAreaRow({ id, city, state, notes, active, deliveryAvailab
         </button>
       </div>
       {error && <p className="text-xs text-rodeo-600">{error}</p>}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete this service area?"
+        description={`This removes ${city}, ${state} from the service area list. This can't be undone.`}
+        confirmLabel="Delete"
+        pending={pending}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={remove}
+      />
     </div>
   );
 }

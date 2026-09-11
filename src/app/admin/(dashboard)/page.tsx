@@ -1,16 +1,9 @@
 import Link from "next/link";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
-
-const STATUS_LABELS: Record<string, string> = {
-  NEW: "New",
-  CONTACTED: "Contacted",
-  QUOTE_SENT: "Quote Sent",
-  FOLLOW_UP: "Follow-Up",
-  CONFIRMED: "Confirmed",
-  COMPLETED: "Completed",
-  LOST: "Lost",
-};
+import { Card } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
+import { LEAD_STATUS_LABELS, LEAD_STATUS_TONES } from "@/lib/status";
 
 async function getDashboardData() {
   try {
@@ -30,7 +23,7 @@ export default async function AdminDashboardPage() {
 
   if (!data.ok) {
     return (
-      <div className="rounded-2xl border border-rodeo-200 bg-rodeo-50 p-6">
+      <Card className="border-rodeo-200 bg-rodeo-50">
         <div className="flex items-center gap-2 text-rodeo-700">
           <AlertTriangle className="h-5 w-5" />
           <h1 className="text-lg font-bold">Database not connected</h1>
@@ -39,7 +32,7 @@ export default async function AdminDashboardPage() {
           Set <code className="rounded bg-white/60 px-1 py-0.5">DATABASE_URL</code> in
           your environment, then run <code className="rounded bg-white/60 px-1 py-0.5">npm run db:migrate</code> to see live data here.
         </p>
-      </div>
+      </Card>
     );
   }
 
@@ -49,13 +42,13 @@ export default async function AdminDashboardPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Total Leads" value={data.total} />
-        {Object.entries(STATUS_LABELS).map(([key, label]) => {
+        {Object.entries(LEAD_STATUS_LABELS).map(([key, label]) => {
           const count = data.byStatus.find((s) => s.status === key)?._count ?? 0;
           return <StatCard key={key} label={label} value={count} />;
         })}
       </div>
 
-      <div className="mt-10 rounded-2xl border border-ink-900/8 bg-white">
+      <Card padding="none" className="mt-10">
         <div className="flex items-center justify-between border-b border-ink-900/8 p-5">
           <h2 className="font-bold text-ink-900">Recent Leads</h2>
           <Link href="/admin/leads" className="flex items-center gap-1 text-sm font-semibold text-rodeo-600 hover:text-rodeo-700">
@@ -74,23 +67,23 @@ export default async function AdminDashboardPage() {
                     {lead.eventType} · {lead.guestCount} guests
                   </p>
                 </div>
-                <span className="rounded-full bg-cream-100 px-3 py-1 text-xs font-semibold text-ink-600">
-                  {STATUS_LABELS[lead.status] ?? lead.status}
-                </span>
+                <Badge tone={LEAD_STATUS_TONES[lead.status] ?? "neutral"}>
+                  {LEAD_STATUS_LABELS[lead.status] ?? lead.status}
+                </Badge>
               </li>
             ))}
           </ul>
         )}
-      </div>
+      </Card>
     </div>
   );
 }
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-2xl border border-ink-900/8 bg-white p-5">
+    <Card>
       <p className="text-2xl font-extrabold text-ink-900">{value}</p>
       <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-ink-400">{label}</p>
-    </div>
+    </Card>
   );
 }

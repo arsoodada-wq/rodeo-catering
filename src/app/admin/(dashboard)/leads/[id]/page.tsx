@@ -7,6 +7,8 @@ import { LeadStatusSelect } from "@/components/admin/LeadStatusSelect";
 import { QuoteBuilder } from "@/components/admin/QuoteBuilder";
 import { AccessRestricted } from "@/components/admin/AccessRestricted";
 import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
+import { Badge } from "@/components/ui/Badge";
+import { QUOTE_STATUS_TONES } from "@/lib/status";
 
 export default async function AdminLeadDetailPage({
   params,
@@ -144,8 +146,9 @@ export default async function AdminLeadDetailPage({
                     >
                       {quote.quoteNumber}
                     </Link>
-                    <span className="text-ink-400">
-                      ${quote.total.toString()} · {quote.status}
+                    <span className="flex items-center gap-2 text-ink-400">
+                      ${quote.total.toString()}
+                      <Badge tone={QUOTE_STATUS_TONES[quote.status] ?? "neutral"}>{quote.status}</Badge>
                     </span>
                   </li>
                 ))}
