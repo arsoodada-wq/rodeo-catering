@@ -7,6 +7,7 @@ import {
   HelpCircle,
   Star,
   Trophy,
+  MapPin,
   LogOut,
 } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
@@ -16,6 +17,7 @@ const navLinks = [
   { href: "/admin/leads", label: "Leads", icon: Users2 },
   { href: "/admin/menu", label: "Menu & Pricing", icon: UtensilsCrossed },
   { href: "/admin/packages", label: "Packages", icon: Package },
+  { href: "/admin/service-areas", label: "Service Areas", icon: MapPin },
   { href: "/admin/faqs", label: "FAQs", icon: HelpCircle },
   { href: "/admin/reviews", label: "Reviews", icon: Star },
   { href: "/admin/awards", label: "Awards", icon: Trophy },

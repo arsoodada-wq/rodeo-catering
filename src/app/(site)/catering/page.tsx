@@ -4,6 +4,7 @@ import { CateringWizard } from "@/components/catering/CateringWizard";
 import { PackagesTeaser } from "@/components/catering/PackagesTeaser";
 import { ServiceAreaAndFaq } from "@/components/home/ServiceAreaAndFaq";
 import { business } from "@/lib/site-content";
+import { getConfirmedServiceAreas } from "@/lib/public-data";
 
 export const metadata: Metadata = {
   title: "Catering",
@@ -11,7 +12,8 @@ export const metadata: Metadata = {
     "Request catering from Rodeo Burgers and Chicken for your corporate event, birthday, graduation, wedding, or gathering in Worth, IL.",
 };
 
-export default function CateringPage() {
+export default async function CateringPage() {
+  const confirmedServiceAreas = await getConfirmedServiceAreas();
   return (
     <>
       <section className="bg-ink-900 py-16 text-cream-50 md:py-20">
@@ -38,7 +40,7 @@ export default function CateringPage() {
 
       <section id="builder" className="scroll-mt-20 py-16 md:py-20">
         <Container>
-          <CateringWizard />
+          <CateringWizard confirmedServiceAreas={confirmedServiceAreas} />
         </Container>
       </section>
 

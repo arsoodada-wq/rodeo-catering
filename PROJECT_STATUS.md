@@ -124,10 +124,31 @@ Tracking against the 12 implementation phases from the project brief.
   up the duplicates, and confirmed the row count stays at 3 across
   repeated seed runs. Verified toggling a review's visibility off/on
   reflects live on the homepage
+- Also added: Service Areas (`/admin/service-areas`) management. Same gap
+  again: `confirmedServiceAreas = ["Worth, IL"]` was hardcoded in
+  `site-content.ts` and used in three places (Footer, the wizard's location
+  step, the FAQ fallback) despite a real `ServiceArea` table with 13 seeded
+  cities (1 active, 12 candidates) sitting unused. Now Footer and the
+  catering page's service-area card read active cities from the database
+  via `getConfirmedServiceAreas()`; the wizard (a client component) gets
+  the list passed down as a prop from the `/catering` page instead of
+  importing the static constant directly. Verified end-to-end: activated a
+  second city in admin, confirmed it appeared in the footer and the
+  catering page immediately, then deactivated it again since it wasn't a
+  real confirmed area — that was a test, not an actual business decision.
+  Caught one more real bug while testing: the "Proudly based in ___"
+  heading was built from `serviceAreas[0]` after an alphabetical sort, so
+  activating "Alsip" (which sorts before "Worth") made the page claim the
+  business is based in Alsip — a real city, not the actual location. Fixed
+  by always deriving that heading from the real business address, with
+  active service areas only ever listed as "Also serving," never as the
+  home base
 - Not done: RBAC enforcement beyond login (role field exists on `User` but
   isn't checked anywhere yet), management screens for every other content
-  type in the schema (service areas, blog, pages, media, social, outreach,
-  users)
+  type in the schema (blog, pages, media, social, outreach, users). Note:
+  the "Where are you located" FAQ answer is free text (admin-owned, not
+  templated), so it will drift from the real service-area list unless
+  manually updated — the Service Areas admin page reminds admins of this
 
 ## Phase 8 — CMS / SEO 🟡 (SEO fundamentals done)
 

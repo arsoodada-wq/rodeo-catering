@@ -2,6 +2,7 @@ import { MapPin } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { confirmedServiceAreas, business, cateringPolicy } from "@/lib/site-content";
 import { db } from "@/lib/db";
+import { getConfirmedServiceAreas } from "@/lib/public-data";
 
 type DisplayFaq = { q: string; a: string };
 
@@ -41,7 +42,9 @@ async function getActiveFaqs(): Promise<DisplayFaq[]> {
 }
 
 export async function ServiceAreaAndFaq() {
-  const faqs = await getActiveFaqs();
+  const [faqs, serviceAreas] = await Promise.all([getActiveFaqs(), getConfirmedServiceAreas()]);
+  const homeLabel = `${business.address.city}, ${business.address.state}`;
+  const otherAreas = serviceAreas.filter((area) => area !== homeLabel);
 
   return (
     <section id="faq" className="bg-cream-100 py-20">
@@ -52,7 +55,7 @@ export async function ServiceAreaAndFaq() {
               Service Area
             </p>
             <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-ink-900">
-              Proudly based in Worth, IL.
+              Proudly based in {homeLabel}.
             </h2>
             <div className="mt-6 flex items-start gap-3 rounded-2xl border border-ink-900/8 bg-white p-5">
               <MapPin className="h-5 w-5 shrink-0 text-rodeo-600" />
@@ -63,9 +66,15 @@ export async function ServiceAreaAndFaq() {
                 <p>
                   {business.address.city}, {business.address.state} {business.address.zip}
                 </p>
+                {otherAreas.length > 0 && (
+                  <p className="mt-2">
+                    <span className="font-semibold text-ink-900">Also serving: </span>
+                    {otherAreas.join(", ")}
+                  </p>
+                )}
                 <p className="mt-2 text-ink-400">
-                  Interested in catering outside Worth? Reach out — we&apos;re
-                  actively expanding our confirmed service area.
+                  Interested in catering outside our confirmed area? Reach out
+                  — we&apos;re actively expanding.
                 </p>
               </div>
             </div>

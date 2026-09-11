@@ -44,6 +44,12 @@ way or (once built) by an existing Super Admin.
   awards and recognition. The first one marked Active + "Show on homepage"
   is what appears in the hero badge. **Only add awards the business
   actually received** — never a placeholder or aspirational one
+- **Service Areas** (`/admin/service-areas`): activate/deactivate cities,
+  toggle delivery availability, add a new city, or delete one. Only
+  Active cities show up in the footer, the catering page's service-area
+  card, and the wizard's location step — **never activate a city until
+  it's actually confirmed**, and check the "Where are you located" FAQ
+  afterward (its answer is free text and won't update itself)
 
 ## What will eventually live here
 
@@ -51,9 +57,10 @@ way or (once built) by an existing Super Admin.
   field exists on every user but nothing checks it yet, so any logged-in
   user currently has full access)
 - Adding brand-new menu items/packages (today's screens edit existing ones;
-  use `npm run db:studio` to add new rows — FAQs, Reviews, and Awards are
-  the exception, which already support adding new entries directly)
-- Managing service areas and delivery fees
+  use `npm run db:studio` to add new rows — FAQs, Reviews, Awards, and
+  Service Areas are the exception, which already support adding new
+  entries directly)
+- Delivery fees (a `DeliveryFee` model exists per service area; no editor yet)
 - Quotes and orders
 - Managing blog posts and landing pages
 - Managing SEO metadata per page

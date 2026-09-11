@@ -4,13 +4,7 @@ import { useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Loader2, PartyPopper } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
-import {
-  eventTypes,
-  menuHighlights,
-  confirmedServiceAreas,
-  business,
-  cateringPolicy,
-} from "@/lib/site-content";
+import { eventTypes, menuHighlights, business, cateringPolicy } from "@/lib/site-content";
 import { submitCateringLead, type CateringLeadInput } from "@/app/actions/submit-catering-lead";
 
 type EventTypeValue = CateringLeadInput["eventType"];
@@ -95,7 +89,7 @@ const initialState: FormState = {
   notes: "",
 };
 
-export function CateringWizard() {
+export function CateringWizard({ confirmedServiceAreas }: { confirmedServiceAreas: string[] }) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initialState);
   const [submitting, setSubmitting] = useState(false);

@@ -1,5 +1,9 @@
 import { db } from "@/lib/db";
-import { award as fallbackAward, reviews as fallbackReviews } from "@/lib/site-content";
+import {
+  award as fallbackAward,
+  reviews as fallbackReviews,
+  confirmedServiceAreas as fallbackServiceAreas,
+} from "@/lib/site-content";
 
 export type DisplayAward = { title: string; organization: string };
 export type DisplayReview = { name: string; rating: number; text: string };
@@ -32,5 +36,18 @@ export async function getActiveReviews(): Promise<DisplayReview[]> {
     return reviews.map((r) => ({ name: r.customerName, rating: r.rating, text: r.reviewText }));
   } catch {
     return [...fallbackReviews];
+  }
+}
+
+export async function getConfirmedServiceAreas(): Promise<string[]> {
+  try {
+    const areas = await db.serviceArea.findMany({
+      where: { active: true },
+      orderBy: { city: "asc" },
+    });
+    if (areas.length === 0) return [...fallbackServiceAreas];
+    return areas.map((a) => `${a.city}, ${a.state}`);
+  } catch {
+    return [...fallbackServiceAreas];
   }
 }

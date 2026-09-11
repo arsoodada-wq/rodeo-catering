@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { business, confirmedServiceAreas } from "@/lib/site-content";
+import { business } from "@/lib/site-content";
+import { getConfirmedServiceAreas } from "@/lib/public-data";
 
 function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -43,7 +44,8 @@ const legalLinks = [
   { href: "/accessibility", label: "Accessibility" },
 ];
 
-export function Footer() {
+export async function Footer() {
+  const confirmedServiceAreas = await getConfirmedServiceAreas();
   return (
     <footer className="border-t border-ink-900/10 bg-ink-900 text-cream-50">
       <Container className="grid grid-cols-2 gap-10 py-14 md:grid-cols-5">
