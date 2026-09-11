@@ -24,7 +24,17 @@ way or (once built) by an existing Super Admin.
 - **Dashboard** (`/admin`): lead counts by status, 5 most recent leads
 - **Leads** (`/admin/leads`): full list of catering wizard submissions,
   with a dropdown to update each lead's status (New, Contacted, Quote
-  Sent, Follow-Up, Confirmed, Completed, Lost)
+  Sent, Follow-Up, Confirmed, Completed, Lost). Click a name to open its
+  detail page — full contact/event info, requested food, and a form to
+  create a quote
+- **Quotes**: from a lead's detail page, add line items (description,
+  quantity, unit price), optional fees/discount/tax/deposit/expiration,
+  and click "Create & Get Link" — you get a private link
+  (`/quote/<token>`) to send the customer directly. No login required on
+  their end; the link itself is the access control, so only send it to
+  the actual customer. Creating a quote for a new lead automatically
+  moves it to Quote Sent; the customer accepting it automatically moves
+  the lead to Confirmed. See all quotes at `/admin/quotes`
 - **Menu & Pricing** (`/admin/menu`): every menu item grouped by category —
   set a price, choose flat vs. per-person pricing, and toggle availability.
   Items with no price still show on the site, marked "available on
@@ -61,7 +71,7 @@ way or (once built) by an existing Super Admin.
   Service Areas are the exception, which already support adding new
   entries directly)
 - Delivery fees (a `DeliveryFee` model exists per service area; no editor yet)
-- Quotes and orders
+- Quote PDF export, editing/re-sending an existing quote, orders
 - Managing blog posts and landing pages
 - Managing SEO metadata per page
 - Managing social content calendar and outreach CRM

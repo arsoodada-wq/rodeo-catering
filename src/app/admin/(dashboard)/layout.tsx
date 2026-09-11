@@ -2,6 +2,7 @@ import Link from "next/link";
 import {
   LayoutDashboard,
   Users2,
+  FileText,
   UtensilsCrossed,
   Package,
   HelpCircle,
@@ -15,6 +16,7 @@ import { auth, signOut } from "@/lib/auth";
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/leads", label: "Leads", icon: Users2 },
+  { href: "/admin/quotes", label: "Quotes", icon: FileText },
   { href: "/admin/menu", label: "Menu & Pricing", icon: UtensilsCrossed },
   { href: "/admin/packages", label: "Packages", icon: Package },
   { href: "/admin/service-areas", label: "Service Areas", icon: MapPin },

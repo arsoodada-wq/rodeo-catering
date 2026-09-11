@@ -62,11 +62,39 @@ Tracking against the 12 implementation phases from the project brief.
 - Not done: the natural-language AI concierge layer on top of this wizard
   (section 13), `get_*` server-side tool functions for it (section 15)
 
-## Phase 6 — CRM / Quotes 🟡 (lead capture + admin view)
+## Phase 6 — CRM / Quotes 🟡 (lead capture + quotes, no PDF)
 
 - Done: catering wizard creates real `Lead` rows; admin can view all leads
-  and update status (`/admin/leads`)
-- Not done: quote generation/PDF, follow-up workflow, editing lead details
+  and update status (`/admin/leads`), and drill into a lead detail page
+  (`/admin/leads/[id]`) showing full contact/event info, requested food,
+  and any quotes already sent
+- Done: a real quote workflow. From a lead's detail page, `QuoteBuilder`
+  creates a `Quote` with dynamic line items, fees/discount/tax, an
+  optional deposit and expiration date, and hands back a link built on the
+  `Quote.secureToken` already in the schema (same trust model as a
+  password-reset link — no customer login). The public page at
+  `/quote/[token]` marks itself VIEWED on first open, offers an
+  AcceptQuoteButton that sets ACCEPTED + `acceptedAt` and bumps the
+  lead to CONFIRMED, and blocks accepting an expired/declined quote.
+  Creating a quote for a NEW/CONTACTED lead auto-advances it to
+  QUOTE_SENT. `/admin/quotes` lists every quote with status and total.
+  Never shows or lets an admin type a price that isn't explicitly entered
+  — no line item defaults to anything but $0
+- Verified the entire loop twice — once in dev, once against a real
+  production build (`next build && next start`, since a few earlier
+  features only broke under real caching behavior dev mode doesn't
+  reproduce): submitted a wizard lead, opened its detail page, created a
+  quote, confirmed the lead auto-advanced to QUOTE_SENT, opened the public
+  quote link and confirmed it flipped to VIEWED, accepted it and confirmed
+  ACCEPTED + the lead moving to CONFIRMED, all against real Postgres data
+- One transient artifact noted, not a bug: immediately after accepting, a
+  screenshot briefly showed the wrong accepted-on date; a fresh full page
+  load showed the correct one, and the raw database value was correct the
+  whole time (verified via direct query) — looks like a dev-mode
+  fast-refresh race on the server-action-triggered soft navigation, not
+  incorrect data or logic
+- Not done: quote PDF export, an editing/re-send flow for an existing
+  quote, follow-up reminders
 
 ## Phase 7 — Admin Dashboard 🟡 (auth + pricing screens)
 

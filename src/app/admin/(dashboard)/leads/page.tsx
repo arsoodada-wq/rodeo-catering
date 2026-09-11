@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
 import { formatEventDate } from "@/lib/format";
@@ -55,10 +56,12 @@ export default async function AdminLeadsPage() {
             </thead>
             <tbody className="divide-y divide-ink-900/8">
               {data.leads.map((lead) => (
-                <tr key={lead.id}>
+                <tr key={lead.id} className="hover:bg-cream-100/60">
                   <td className="p-4">
-                    <p className="font-semibold text-ink-900">{lead.name}</p>
-                    <p className="text-ink-400">{lead.email || lead.phone}</p>
+                    <Link href={`/admin/leads/${lead.id}`} className="block">
+                      <p className="font-semibold text-ink-900 hover:text-rodeo-600">{lead.name}</p>
+                      <p className="text-ink-400">{lead.email || lead.phone}</p>
+                    </Link>
                   </td>
                   <td className="p-4 text-ink-600">{lead.eventType}</td>
                   <td className="p-4 text-ink-600">{lead.guestCount}</td>
