@@ -30,6 +30,22 @@ directly. Every server-side save/create/delete action re-checks the
 permission too — this isn't just a hidden button, it's enforced on the
 backend regardless of what the UI shows.
 
+## Managing admin accounts
+
+**`/admin/users`** (Super Admin only) — create a new admin account (name,
+email, temporary password, role), edit an existing one's name/role/active
+status, or reset someone's password. New accounts sign in at `/admin/login`
+with the email and password you set — nothing is emailed automatically, so
+share the temporary password with them yourself and ask them to change it
+(there's still no self-service password-change screen — see "What will
+eventually live here" for that).
+
+You can't deactivate your own account or change your own role from this
+screen, even as a Super Admin — this is a deliberate guard against locking
+yourself out, enforced both in the UI and on the server. If you need to
+change a Super Admin's own role, do it from a different Super Admin
+account or via `npm run db:studio`.
+
 ## Logging in
 
 1. Make sure `DATABASE_URL`, `AUTH_SECRET`, and `ADMIN_EMAIL`/`ADMIN_PASSWORD`
@@ -89,9 +105,8 @@ way or (once built) by an existing Super Admin.
 
 ## What will eventually live here
 
-- A screen for creating new admin user accounts (today, `npm run db:studio`
-  is the only way to add one — see "Roles and permissions" above for what
-  each role can already do once it exists)
+- Self-service password change (today an admin's password can only be
+  reset by a Super Admin at `/admin/users`, or via `npm run db:studio`)
 - Adding brand-new menu items/packages (today's screens edit existing ones;
   use `npm run db:studio` to add new rows — FAQs, Reviews, Awards, and
   Service Areas are the exception, which already support adding new

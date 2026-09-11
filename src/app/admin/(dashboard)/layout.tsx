@@ -10,6 +10,7 @@ import {
   Trophy,
   MapPin,
   ShieldCheck,
+  UserCog,
   LogOut,
 } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
@@ -39,6 +40,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     }
   }
   if (isSuperAdmin) {
+    visibleLinks.push({ href: "/admin/users", label: "Admin Accounts", icon: UserCog });
     visibleLinks.push({ href: "/admin/permissions", label: "Permissions", icon: ShieldCheck });
   }
 

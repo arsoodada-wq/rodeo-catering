@@ -195,9 +195,25 @@ Tracking against the 12 implementation phases from the project brief.
   database directly via `psql`, confirmed it survived a full page reload
   (not just optimistic client state), then reverted it and deleted the test
   account
+- Done: admin account management (`/admin/users`, Super Admin only) —
+  create a new admin account with a temporary password and a role, edit an
+  existing one's name/role/active status, reset a password. Auth.js's JWT
+  didn't carry the user's own id into the session (only role was attached),
+  which this needed for a self-lockout guard — added it to the jwt/session
+  callbacks in `src/lib/auth.ts`. The guard blocks a Super Admin from
+  deactivating their own account or changing their own role, enforced both
+  client-side (disabled fields) and server-side (the actual check, in case
+  the client is bypassed) — the account this project ships with is
+  currently the only Super Admin, so this isn't a hypothetical
+- Verified end-to-end: created a real MANAGER-role account through the UI,
+  signed out, signed in as that account, and confirmed its sidebar showed
+  exactly the Manager permission set (everything except Admin Accounts and
+  Permissions) with no extra code needed to make that happen — it's the
+  same permission check every other page already uses. Deleted the test
+  account afterward
 - Not done: management screens for every other content type in the schema
-  (blog, pages, media, social, outreach), a UI for creating new admin user
-  accounts (use `npm run db:studio` for now). Note:
+  (blog, pages, media, social, outreach), self-service password change.
+  Note:
   the "Where are you located" FAQ answer is free text (admin-owned, not
   templated), so it will drift from the real service-area list unless
   manually updated — the Service Areas admin page reminds admins of this
