@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { PERMISSIONS, requirePermission } from "@/lib/permissions";
+import { computeQuoteTotals } from "@/lib/quote-math";
 
 const itemSchema = z.object({
   description: z.string().min(1, "Every line item needs a description"),
@@ -34,8 +35,12 @@ export async function createQuote(input: CreateQuoteInput) {
   }
   const { leadId, items, fees, discount, tax, depositAmount, termsText, expiresAt } = parsed.data;
 
-  const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
-  const total = Math.max(0, subtotal + fees + tax - discount);
+  const { subtotal, total, balanceAmount } = computeQuoteTotals(items, {
+    fees,
+    discount,
+    tax,
+    depositAmount,
+  });
 
   try {
     const lead = await db.lead.findUnique({ where: { id: leadId } });
@@ -55,7 +60,7 @@ export async function createQuote(input: CreateQuoteInput) {
         tax,
         total,
         depositAmount: depositAmount ?? undefined,
-        balanceAmount: depositAmount !== undefined ? total - depositAmount : undefined,
+        balanceAmount,
         termsText: termsText || undefined,
         expiresAt: expiresAt ? new Date(expiresAt) : undefined,
         sentAt: new Date(),

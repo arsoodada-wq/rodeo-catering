@@ -4,6 +4,7 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { PERMISSIONS, requirePermission } from "@/lib/permissions";
+import { slugify } from "@/lib/slugify";
 
 function revalidatePublicPages() {
   revalidatePath("/");
@@ -47,13 +48,6 @@ const createSchema = z.object({
   city: z.string().min(1, "City is required"),
   state: z.string().min(1, "State is required"),
 });
-
-function slugify(city: string, state: string) {
-  return `${city}-${state}`
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
-}
 
 export async function createServiceArea(input: z.infer<typeof createSchema>) {
   const permission = await requirePermission(PERMISSIONS.SERVICE_AREAS_MANAGE);

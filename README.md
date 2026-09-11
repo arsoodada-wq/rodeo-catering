@@ -111,6 +111,16 @@ Open [http://localhost:3000](http://localhost:3000) for the public site,
 [http://localhost:3000/admin/login](http://localhost:3000/admin/login) for
 admin (sign in with `ADMIN_EMAIL`/`ADMIN_PASSWORD`).
 
+### 5. Run the tests
+
+```bash
+npm test          # run once
+npm run test:watch
+```
+
+Unit tests only — pure logic (`src/lib/**/*.test.ts`), no database or
+server required.
+
 ## Project structure
 
 ```

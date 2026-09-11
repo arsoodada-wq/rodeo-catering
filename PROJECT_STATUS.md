@@ -260,9 +260,51 @@ Social content calendar, outreach CRM UI (schema exists; no UI yet).
 
 ## Phase 10 — Security / Performance audit ⬜ not started
 
-## Phase 11 — Testing ⬜ not started
+## Phase 11 — Testing 🟡 (unit tests for the highest-risk logic; no e2e yet)
 
-No automated tests yet.
+- Done: Vitest (`npm test` / `npm run test:watch`), configured with
+  `vite-tsconfig-paths` so tests can use the same `@/*` imports as the app.
+  20 tests across 5 files, all against pure logic — no test hits the real
+  database or starts a server
+- While writing these, found and fixed two real instances of duplicated
+  business logic rather than just testing the duplication in place:
+  1. The quote subtotal/total formula (`subtotal + fees + tax - discount`,
+     clamped to never go negative) was written out twice — once in
+     `create-quote.ts` (the source of truth that gets saved) and again in
+     `QuoteBuilder.tsx` (the live preview an admin sees while building a
+     quote). Two independent copies of the same formula is exactly the
+     kind of thing that quietly drifts apart after one gets edited and the
+     other doesn't — extracted both into `src/lib/quote-math.ts`
+     (`computeQuoteTotals`), now the single source both places call
+  2. The service-area slug formula was duplicated between `prisma/seed.ts`
+     and `update-service-area.ts`'s `createServiceArea`. Left the seed
+     script's version alone (changing it would alter already-seeded,
+     possibly-referenced slugs for no benefit), but extracted the one used
+     at runtime by admins adding a new city into `src/lib/slugify.ts`
+  3. `src/lib/format.test.ts` specifically reproduces the UTC-date bug this
+     project shipped once already (Phase 7) by forcing the test's
+     timezone to `Etc/GMT+12` and asserting `formatEventDate` still shows
+     the correct day — this is the kind of bug that hides completely on a
+     machine whose local timezone happens to be UTC, so the test forces a
+     timezone that would expose it either way
+  4. `src/lib/status.test.ts` asserts `LEAD_STATUS_LABELS`/`_TONES` and
+     `QUOTE_STATUS_TONES` have exactly the same keys as the real
+     `LeadStatus`/`QuoteStatus` enums generated from the Prisma schema —
+     so adding a new status to the schema without updating its badge/label
+     will fail a test instead of silently rendering an unstyled fallback
+  5. `src/lib/permissions.test.ts` asserts the SUPER_ADMIN short-circuit in
+     `roleHasPermission` never touches the database at all (the guarantee
+     that keeps `/admin/permissions` from being able to lock every admin
+     out), plus the grant/deny paths for every other role
+- Verified the refactor didn't change real behavior: filled out a real
+  quote in the live `QuoteBuilder` UI (4 line items, fees, discount, tax),
+  confirmed the on-screen preview total, created the quote, and confirmed
+  via a direct database query that the saved subtotal/total matched the
+  preview exactly — then deleted that test quote and reverted the lead's
+  status, since it wasn't a real one
+- Not done: component/UI tests, integration tests against a real
+  database, end-to-end browser tests (Playwright or similar) for the
+  wizard → lead → quote → accept flow
 
 ## Phase 12 — Production readiness ⬜ not started
 

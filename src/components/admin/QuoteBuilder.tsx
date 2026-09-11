@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Plus, Trash2, Loader2, Check, Copy } from "lucide-react";
 import { createQuote } from "@/app/actions/create-quote";
+import { computeQuoteTotals } from "@/lib/quote-math";
 
 type LineItem = { description: string; quantity: number; unitPrice: number };
 
@@ -29,8 +30,7 @@ export function QuoteBuilder({
   const [result, setResult] = useState<{ secureToken: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
-  const subtotal = items.reduce((sum, i) => sum + i.quantity * i.unitPrice, 0);
-  const total = Math.max(0, subtotal + fees + tax - discount);
+  const { subtotal, total } = computeQuoteTotals(items, { fees, discount, tax });
 
   function updateItem(index: number, patch: Partial<LineItem>) {
     setItems((prev) => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
