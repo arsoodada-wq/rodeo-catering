@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { award } from "@/lib/site-content";
+import { getHomepageAward } from "@/lib/public-data";
 import { Award, Star } from "lucide-react";
 
-export function Hero() {
+export async function Hero() {
+  const award = await getHomepageAward();
   return (
     <section className="relative overflow-hidden bg-ink-900 text-cream-50">
       <div

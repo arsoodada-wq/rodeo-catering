@@ -37,6 +37,13 @@ way or (once built) by an existing Super Admin.
   on site" to publish it (unchecked ones stay saved but hidden), add brand
   new FAQs, or delete ones you don't need. Changes show on the homepage
   and catering page immediately — no rebuild needed
+- **Reviews** (`/admin/reviews`): edit, activate/deactivate, add, or delete
+  customer reviews shown on the homepage. **Only add real reviews from
+  actual customers** — the form says this too, as a reminder
+- **Awards** (`/admin/awards`): edit, activate/deactivate, add, or delete
+  awards and recognition. The first one marked Active + "Show on homepage"
+  is what appears in the hero badge. **Only add awards the business
+  actually received** — never a placeholder or aspirational one
 
 ## What will eventually live here
 
@@ -44,11 +51,10 @@ way or (once built) by an existing Super Admin.
   field exists on every user but nothing checks it yet, so any logged-in
   user currently has full access)
 - Adding brand-new menu items/packages (today's screens edit existing ones;
-  use `npm run db:studio` to add new rows — FAQs are the exception, which
-  already supports adding new ones directly)
+  use `npm run db:studio` to add new rows — FAQs, Reviews, and Awards are
+  the exception, which already support adding new entries directly)
 - Managing service areas and delivery fees
 - Quotes and orders
-- Managing reviews and awards/recognition
 - Managing blog posts and landing pages
 - Managing SEO metadata per page
 - Managing social content calendar and outreach CRM

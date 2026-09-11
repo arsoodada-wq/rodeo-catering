@@ -262,36 +262,48 @@ async function main() {
   }
 
   // ── Reviews — reused verbatim from the business's own public site, not
-  // fabricated. Admin should attach real source permalinks when known. ──
-  await db.review.createMany({
-    data: [
-      {
-        customerName: "Ramzan A.",
-        rating: 5,
-        reviewText:
-          "Awesome experience. I got the 6 pc chicken wing with lemon pepper and they're some of the best wings I've ever had. The fries are great and their lemon pepper is to die for.",
+  // fabricated. Admin should attach real source permalinks when known.
+  // Stable ids + upsert: Review.id is an auto-generated cuid with nothing
+  // else unique to key off of, so createMany's skipDuplicates could never
+  // actually detect a repeat — every re-seed silently added 3 more copies
+  // of the same three reviews. ──
+  const reviews = [
+    {
+      id: "review-ramzan-a",
+      customerName: "Ramzan A.",
+      rating: 5,
+      reviewText:
+        "Awesome experience. I got the 6 pc chicken wing with lemon pepper and they're some of the best wings I've ever had. The fries are great and their lemon pepper is to die for.",
+    },
+    {
+      id: "review-patrick-c",
+      customerName: "Patrick C.",
+      rating: 5,
+      reviewText:
+        "This place has the absolute BEST smash burgers around. The entire staff are friendly and attentive and very welcoming. They have healthy bowl options as well.",
+    },
+    {
+      id: "review-gina-t",
+      customerName: "Gina T.",
+      rating: 5,
+      reviewText:
+        "Loved Rodeo Burger & Chicken! Their burgers are deliciously juicy and perfectly cooked. The loaded fries were crispy, cheesy, and absolutely addictive.",
+    },
+  ];
+  for (const review of reviews) {
+    await db.review.upsert({
+      where: { id: review.id },
+      create: {
+        id: review.id,
+        customerName: review.customerName,
+        rating: review.rating,
+        reviewText: review.reviewText,
         source: "Published on rodeoburgersandchicken.com",
         active: true,
       },
-      {
-        customerName: "Patrick C.",
-        rating: 5,
-        reviewText:
-          "This place has the absolute BEST smash burgers around. The entire staff are friendly and attentive and very welcoming. They have healthy bowl options as well.",
-        source: "Published on rodeoburgersandchicken.com",
-        active: true,
-      },
-      {
-        customerName: "Gina T.",
-        rating: 5,
-        reviewText:
-          "Loved Rodeo Burger & Chicken! Their burgers are deliciously juicy and perfectly cooked. The loaded fries were crispy, cheesy, and absolutely addictive.",
-        source: "Published on rodeoburgersandchicken.com",
-        active: true,
-      },
-    ],
-    skipDuplicates: true,
-  });
+      update: {},
+    });
+  }
 
   // ── FAQs. The first four are answered from facts already confirmed
   // elsewhere in this file (address/service area, the wizard flow, plant-

@@ -108,10 +108,26 @@ Tracking against the 12 implementation phases from the project brief.
   (`faq-location`, `faq-lead-time`, etc.) and cleaning up the stale rows.
   Verified create/edit/activate/delete each reflect live on the public
   site with no rebuild needed
+- Also added: Reviews (`/admin/reviews`) and Awards (`/admin/awards`)
+  management. The homepage's testimonials and award badge (both in `Hero`
+  and `Testimonials`) were hardcoded from `site-content.ts` despite real
+  seeded `Review`/`AwardRecognition` data existing in the database this
+  whole time — same class of gap as the FAQ one, now fixed the same way
+  (DB-backed via `src/lib/public-data.ts`, static content only as a
+  fallback). Found and fixed a second real bug while verifying this: the
+  review seed used `createMany` + `skipDuplicates`, but `Review.id` is an
+  auto-generated cuid with nothing else unique to dedupe against, so
+  `skipDuplicates` could never actually detect a repeat — every re-seed
+  silently added 3 more copies of the same three reviews. By this point
+  in the session that had run enough times to leave 12 duplicate rows
+  (4x each) live on the homepage. Fixed with stable ids + upsert, cleaned
+  up the duplicates, and confirmed the row count stays at 3 across
+  repeated seed runs. Verified toggling a review's visibility off/on
+  reflects live on the homepage
 - Not done: RBAC enforcement beyond login (role field exists on `User` but
   isn't checked anywhere yet), management screens for every other content
-  type in the schema (service areas, reviews, awards, blog, pages, media,
-  social, outreach, users)
+  type in the schema (service areas, blog, pages, media, social, outreach,
+  users)
 
 ## Phase 8 — CMS / SEO 🟡 (SEO fundamentals done)
 

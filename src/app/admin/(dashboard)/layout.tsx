@@ -1,5 +1,14 @@
 import Link from "next/link";
-import { LayoutDashboard, Users2, UtensilsCrossed, Package, HelpCircle, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Users2,
+  UtensilsCrossed,
+  Package,
+  HelpCircle,
+  Star,
+  Trophy,
+  LogOut,
+} from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
 
 const navLinks = [
@@ -8,6 +17,8 @@ const navLinks = [
   { href: "/admin/menu", label: "Menu & Pricing", icon: UtensilsCrossed },
   { href: "/admin/packages", label: "Packages", icon: Package },
   { href: "/admin/faqs", label: "FAQs", icon: HelpCircle },
+  { href: "/admin/reviews", label: "Reviews", icon: Star },
+  { href: "/admin/awards", label: "Awards", icon: Trophy },
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

@@ -1,8 +1,10 @@
 import { Star, Award } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { reviews, award } from "@/lib/site-content";
+import { getActiveReviews, getHomepageAward } from "@/lib/public-data";
 
-export function Testimonials() {
+export async function Testimonials() {
+  const [reviews, award] = await Promise.all([getActiveReviews(), getHomepageAward()]);
+
   return (
     <section className="py-20">
       <Container>
