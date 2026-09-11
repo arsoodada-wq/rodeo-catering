@@ -4,7 +4,13 @@ import { useState } from "react";
 import { Check, ChevronLeft, ChevronRight, Loader2, PartyPopper } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { Button } from "@/components/ui/Button";
-import { eventTypes, menuHighlights, confirmedServiceAreas, business } from "@/lib/site-content";
+import {
+  eventTypes,
+  menuHighlights,
+  confirmedServiceAreas,
+  business,
+  cateringPolicy,
+} from "@/lib/site-content";
 import { submitCateringLead, type CateringLeadInput } from "@/app/actions/submit-catering-lead";
 
 type EventTypeValue = CateringLeadInput["eventType"];
@@ -39,6 +45,19 @@ const cateringStyles: { value: CateringStyleValue; label: string; description: s
 ];
 
 const STEPS = ["Event", "Guests", "Date", "Location", "Style", "Food", "Contact", "Review"] as const;
+
+// Rounds up to whole calendar days in the visitor's own local time, so
+// "48 hours" reliably means at least 2 full days out rather than
+// sometimes landing mid-afternoon-tomorrow depending on time of day.
+function getMinSelectableDate(): string {
+  const leadDays = Math.ceil(cateringPolicy.minLeadTimeHours / 24);
+  const d = new Date();
+  d.setDate(d.getDate() + leadDays);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
+}
 
 type FormState = {
   eventType: EventTypeValue | null;
@@ -93,7 +112,7 @@ export function CateringWizard() {
       case 1:
         return form.guestCount !== null && form.guestCount > 0;
       case 2:
-        return form.eventDate !== "";
+        return form.eventDate !== "" && form.eventDate >= getMinSelectableDate();
       case 3:
         return form.city.trim() !== "";
       case 4:
@@ -223,6 +242,7 @@ export function CateringWizard() {
               <Field label="Date" required>
                 <input
                   type="date"
+                  min={getMinSelectableDate()}
                   value={form.eventDate}
                   onChange={(e) => update("eventDate", e.target.value)}
                   className="input"
@@ -237,6 +257,17 @@ export function CateringWizard() {
                 />
               </Field>
             </div>
+            {form.eventDate && form.eventDate < getMinSelectableDate() ? (
+              <p className="mt-3 text-xs font-medium text-rodeo-600">
+                We need at least {cateringPolicy.minLeadTimeHours} hours notice — please choose a
+                later date.
+              </p>
+            ) : (
+              <p className="mt-3 text-xs text-ink-400">
+                We require at least {cateringPolicy.minLeadTimeHours} hours notice for catering
+                orders, so dates sooner than that aren&apos;t selectable.
+              </p>
+            )}
           </StepShell>
         )}
 

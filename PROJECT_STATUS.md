@@ -53,6 +53,12 @@ Tracking against the 12 implementation phases from the project brief.
 - Fixed in this phase: `src/lib/db.ts` constructed `PrismaClient` eagerly
   at import time, so a missing `DATABASE_URL` threw outside of any
   try/catch and hung the UI on submit. Now lazy via a `Proxy`
+- Confirmed by the business: catering orders require 48 hours notice. The
+  date step greys out (via the native date input's `min`) any date sooner
+  than that, with a clear message, and `submitCateringLead` has a looser
+  24-hour server-side floor as defense in depth against bypassing the UI.
+  Single source of truth is `cateringPolicy.minLeadTimeHours` in
+  `src/lib/site-content.ts` — the public FAQ answer reads from it too
 - Not done: the natural-language AI concierge layer on top of this wizard
   (section 13), `get_*` server-side tool functions for it (section 15)
 
@@ -118,7 +124,7 @@ No automated tests yet.
 Search the codebase for `REQUIRES BUSINESS CONFIRMATION`. Known items:
 
 - Catering pricing (all menu items/packages currently have `price: null`)
-- Minimum guest count, lead time, delivery fees
+- Minimum guest count, delivery fees
 - Service areas beyond Worth, IL (candidates seeded inactive)
 - FAQ answers (questions seeded, answers pending)
 - Vegan/Halal/Kosher accuracy (existing site is inconsistent — homepage says

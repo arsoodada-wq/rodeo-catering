@@ -1,6 +1,6 @@
 import { MapPin } from "lucide-react";
 import { Container } from "@/components/ui/Container";
-import { confirmedServiceAreas, business } from "@/lib/site-content";
+import { confirmedServiceAreas, business, cateringPolicy } from "@/lib/site-content";
 
 const faqs = [
   {
@@ -17,7 +17,7 @@ const faqs = [
   },
   {
     q: "How far in advance should I book?",
-    a: "Booking windows depend on your event size and date — reach out as early as you can and our catering team will confirm availability.",
+    a: `We require at least ${cateringPolicy.minLeadTimeHours} hours notice for all catering orders. For larger events, booking further ahead helps us confirm availability.`,
   },
 ];
 

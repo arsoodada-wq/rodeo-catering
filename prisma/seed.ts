@@ -101,9 +101,10 @@ async function main() {
         description: "REQUIRES BUSINESS CONFIRMATION",
       },
       {
-        key: "catering.leadTimeDays",
-        value: Prisma.JsonNull,
-        description: "REQUIRES BUSINESS CONFIRMATION — how far in advance to book",
+        key: "catering.minLeadTimeHours",
+        value: 48,
+        description:
+          "Confirmed by the business: minimum notice required for a catering order. Enforced in the catering wizard's date picker (src/lib/site-content.ts cateringPolicy) and as a defense-in-depth check in submitCateringLead.",
       },
     ],
     skipDuplicates: true,
@@ -294,30 +295,33 @@ async function main() {
   // ── FAQs — real, commonly-needed catering questions. Answers are left as
   // confirmation placeholders and INACTIVE until the business supplies the
   // real policy, so nothing unverified goes live by accident. ──
-  const faqs = [
-    "How far do you cater?",
-    "How many people can you cater for?",
-    "Do you offer corporate catering?",
-    "Do you offer live cooking / on-site cookouts?",
-    "How far in advance should I book catering?",
-    "Do you offer delivery?",
-    "Can I customize a catering package?",
-    "Do you cater weddings?",
-    "Do you cater school events?",
-    "Do you cater large events (200+ guests)?",
-    "What food options are available (vegan, halal, kosher, allergies)?",
-    "How does catering pricing work?",
+  const faqs: { question: string; answer?: string }[] = [
+    { question: "How far do you cater?" },
+    { question: "How many people can you cater for?" },
+    { question: "Do you offer corporate catering?" },
+    { question: "Do you offer live cooking / on-site cookouts?" },
+    {
+      question: "How far in advance should I book catering?",
+      answer: "We require at least 48 hours notice for all catering orders.",
+    },
+    { question: "Do you offer delivery?" },
+    { question: "Can I customize a catering package?" },
+    { question: "Do you cater weddings?" },
+    { question: "Do you cater school events?" },
+    { question: "Do you cater large events (200+ guests)?" },
+    { question: "What food options are available (vegan, halal, kosher, allergies)?" },
+    { question: "How does catering pricing work?" },
   ];
-  for (const [i, q] of faqs.entries()) {
+  for (const [i, faq] of faqs.entries()) {
     await db.fAQ.upsert({
       where: { id: `seed-faq-${i}` },
       create: {
         id: `seed-faq-${i}`,
-        question: q,
-        answer: "REQUIRES BUSINESS CONFIRMATION",
+        question: faq.question,
+        answer: faq.answer ?? "REQUIRES BUSINESS CONFIRMATION",
         pages: ["catering"],
         sortOrder: i,
-        active: false,
+        active: Boolean(faq.answer),
       },
       update: {},
     });

@@ -28,6 +28,13 @@ export const business = {
   restaurantSite: "https://www.rodeoburgersandchicken.com",
 } as const;
 
+// Confirmed directly by the business: catering orders require 48 hours
+// notice. Used to grey out too-soon dates in the catering wizard and to
+// answer the "how far in advance" FAQ — keep both in sync with this value.
+export const cateringPolicy = {
+  minLeadTimeHours: 48,
+} as const;
+
 export const award = {
   organization: "5 Reasons to Visit",
   title: "Nominated for Best Smash Burgers in Illinois",

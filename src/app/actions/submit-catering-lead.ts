@@ -58,6 +58,22 @@ export async function submitCateringLead(
     return { ok: false, error: "Please provide an email or phone number." };
   }
 
+  // Defense in depth: the wizard's date picker already greys out dates
+  // sooner than the business's minimum notice. This check is deliberately
+  // looser (24h vs. the wizard's 48h) so a legitimate client-approved date
+  // is never rejected here over a client/server clock or timezone skew —
+  // it only catches a request that bypassed the UI entirely.
+  if (data.eventDate) {
+    const eventTimestamp = new Date(data.eventDate).getTime();
+    const minAllowed = Date.now() + 24 * 60 * 60 * 1000;
+    if (!Number.isNaN(eventTimestamp) && eventTimestamp < minAllowed) {
+      return {
+        ok: false,
+        error: "That date is too soon — catering orders need at least 48 hours notice.",
+      };
+    }
+  }
+
   try {
     const lead = await db.lead.create({
       data: {
