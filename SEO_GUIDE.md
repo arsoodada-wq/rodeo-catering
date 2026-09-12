@@ -4,6 +4,40 @@ _Partial — the admin SEO controls (Phase 8) don't exist yet, but the
 code-level conventions below are in place and should be followed as more
 pages are built._
 
+## Targeting local ("near me") search
+
+There is no `<meta name="keywords">` tag anywhere, and there shouldn't be —
+Google has ignored that tag since 2009. What actually drives local search
+ranking, in rough order of impact:
+
+1. **Google Business Profile** (business.google.com) — not part of this
+   codebase at all. For "catering near me" specifically, this is usually
+   the single biggest lever: category, service area, photos, posts, and
+   especially reviews. If the business doesn't already have one claimed
+   and optimized for catering (as opposed to the dine-in restaurant), that
+   is the highest-leverage next step and it's outside what code can fix
+2. **The page `<title>` tag** — every public page's title now includes
+   "Worth, IL" (fixed 2026-09-12; previously only the homepage did — see
+   `git log` for the commit). Every new page should follow this pattern:
+   `"<Service> in <City>, IL"` or `"<Service> Near <City>, IL"`
+3. **`CateringBusiness` JSON-LD** (`LocalBusinessSchema.tsx`) — address,
+   phone, `areaServed`. Currently scoped to Worth only; expand
+   `areaServed` once the business confirms additional service areas (see
+   `ServiceArea` seed data — most candidates are seeded inactive)
+4. **Location pages** — `/catering/[slug]` for each confirmed city (e.g.
+   "Catering in Palos Heights, IL"), each targeting that city's own local
+   search intent. Not built yet: blocked on the business confirming which
+   candidate suburbs are actually served, since publishing a page for a
+   city the business doesn't actually cater to would be worse than not
+   ranking for it at all
+5. **Reviews and citations** — real reviews (Google, Yelp, Facebook) and
+   consistent name/address/phone across every online listing. Three real
+   reviews are already seeded from the business's own site; more, recent,
+   real reviews help more than anything in this codebase can
+6. **Google Search Console** — not wired up yet (env vars stubbed in
+   `.env.example`). Needed to see what people are actually searching to
+   find the site and to request faster indexing of new pages
+
 ## What's implemented today
 
 - `src/app/layout.tsx` sets a title template (`%s | Rodeo Burgers & Chicken

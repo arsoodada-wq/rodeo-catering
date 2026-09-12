@@ -3,7 +3,7 @@ import { Heart, Users, HandPlatter, Sparkles } from "lucide-react";
 import { EventLandingTemplate } from "@/components/catering/EventLandingTemplate";
 
 export const metadata: Metadata = {
-  title: "Wedding Catering",
+  title: "Wedding Catering in Worth, IL",
   description:
     "Wedding catering from Rodeo Burgers and Chicken — a memorable, casual food option for rehearsal dinners and receptions in Worth, IL.",
 };

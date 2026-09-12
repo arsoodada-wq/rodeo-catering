@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/Button";
 import { business } from "@/lib/site-content";
 
 export const metadata: Metadata = {
-  title: "Live Cookout Catering",
+  title: "Live Cookout Catering in Worth, IL",
   description:
-    "Live cookout catering from Rodeo Burgers and Chicken — our team cooks fresh, on-site, turning your event into a food experience.",
+    "Live cookout catering from Rodeo Burgers and Chicken in Worth, IL — our team cooks fresh, on-site, turning your event into a food experience.",
 };
 
 const highlights = [

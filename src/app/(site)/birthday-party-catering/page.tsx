@@ -3,7 +3,7 @@ import { Cake, Users, HandPlatter, Sparkles } from "lucide-react";
 import { EventLandingTemplate } from "@/components/catering/EventLandingTemplate";
 
 export const metadata: Metadata = {
-  title: "Birthday Party Catering",
+  title: "Birthday Party Catering in Worth, IL",
   description:
     "Birthday party catering from Rodeo Burgers and Chicken — smash burgers, chicken, and sides for celebrations of any size in Worth, IL.",
 };

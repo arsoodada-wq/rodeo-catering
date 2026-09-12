@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { business } from "@/lib/site-content";
 
 export const metadata: Metadata = {
-  title: "Corporate Catering",
+  title: "Corporate Catering in Worth, IL",
   description:
     "Corporate catering from Rodeo Burgers and Chicken — office lunches, meetings, employee appreciation, and company events in Worth, IL.",
 };
