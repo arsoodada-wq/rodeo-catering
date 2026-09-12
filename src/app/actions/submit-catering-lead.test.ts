@@ -14,6 +14,9 @@ vi.mock("@/lib/rate-limit", async () => {
   return actual;
 });
 
+const sendNewLeadNotification = vi.fn();
+vi.mock("@/lib/email", () => ({ sendNewLeadNotification: (...args: unknown[]) => sendNewLeadNotification(...args) }));
+
 import { submitCateringLead } from "./submit-catering-lead";
 import { _resetRateLimitsForTests } from "@/lib/rate-limit";
 
@@ -30,6 +33,8 @@ describe("submitCateringLead", () => {
   beforeEach(() => {
     create.mockReset();
     create.mockResolvedValue({ id: "lead-1" });
+    sendNewLeadNotification.mockReset();
+    sendNewLeadNotification.mockResolvedValue(undefined);
     _resetRateLimitsForTests();
   });
 
@@ -37,6 +42,13 @@ describe("submitCateringLead", () => {
     const res = await submitCateringLead({ ...baseInput, formStartedAtMs: Date.now() - 10_000 });
     expect(res.ok).toBe(true);
     expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  it("notifies the admin of the new lead, but a notification failure doesn't fail the submission", async () => {
+    sendNewLeadNotification.mockRejectedValueOnce(new Error("Resend is down"));
+    const res = await submitCateringLead({ ...baseInput, formStartedAtMs: Date.now() - 10_000 });
+    expect(res.ok).toBe(true);
+    expect(sendNewLeadNotification).toHaveBeenCalledWith(expect.objectContaining({ id: "lead-1" }));
   });
 
   it("silently ignores a submission with the honeypot field filled", async () => {

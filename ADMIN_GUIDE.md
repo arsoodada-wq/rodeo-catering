@@ -70,7 +70,10 @@ way or (once built) by an existing Super Admin.
   with a dropdown to update each lead's status (New, Contacted, Quote
   Sent, Follow-Up, Confirmed, Completed, Lost). Click a name to open its
   detail page — full contact/event info, requested food, and a form to
-  create a quote
+  create a quote. Every new lead also emails `ADMIN_NOTIFICATION_EMAIL`
+  (set in `.env`) with the key details and a direct link to its page — set
+  `RESEND_API_KEY` (https://resend.com) to actually send it, or leave it
+  blank during development and it logs to the server console instead
 - **Quotes**: from a lead's detail page, add line items (description,
   quantity, unit price), optional fees/discount/tax/deposit/expiration,
   and click "Create & Get Link" — you get a private link

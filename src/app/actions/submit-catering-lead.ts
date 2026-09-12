@@ -4,6 +4,7 @@ import { z } from "zod";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { sendNewLeadNotification } from "@/lib/email";
 
 const SUBMIT_LIMIT = 5;
 const SUBMIT_WINDOW_MS = 60 * 60 * 1000;
@@ -127,6 +128,16 @@ export async function submitCateringLead(
         status: "NEW",
       },
     });
+
+    // Best-effort: the lead is already saved, so a notification failure
+    // (bad Resend key, network blip) must never turn a successful
+    // submission into an error for the customer.
+    try {
+      await sendNewLeadNotification(lead);
+    } catch (err) {
+      console.error("sendNewLeadNotification failed:", err);
+    }
+
     return { ok: true, leadId: lead.id };
   } catch (err) {
     console.error("submitCateringLead failed:", err);

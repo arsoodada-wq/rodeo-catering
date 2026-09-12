@@ -598,7 +598,60 @@ and cookie/session config. Findings and what was done about each:
   database, end-to-end browser tests (Playwright or similar) for the
   wizard → lead → quote → accept flow
 
-## Phase 12 — Production readiness ⬜ not started
+## Phase 12 — Production readiness 🟡 (email notifications done)
+
+- Done: real new-lead email notifications, closing a gap `.env.example`
+  had been documenting as if it already worked (`RESEND_API_KEY`,
+  `EMAIL_FROM`, `ADMIN_NOTIFICATION_EMAIL` were all present with comments
+  describing behavior — `src/lib/email.ts` didn't exist until now). Without
+  this, the only way to notice a new catering lead was to have the admin
+  dashboard open — a real gap for a live business. `submitCateringLead`
+  now emails `ADMIN_NOTIFICATION_EMAIL` with the lead's name, contact info,
+  event type, guest count, date, style, and notes, plus a direct link to
+  its admin detail page, every time a lead is created — through the
+  guided wizard *or* the AI concierge, since both funnel through this one
+  action. With no `RESEND_API_KEY` set, the email is logged to the console
+  instead of sent (the "dev-safe default" `.env.example` already
+  promised) rather than silently doing nothing
+- A failed notification (bad key, Resend outage) never fails the lead
+  submission itself — the lead is already committed to the database by
+  the time the email is attempted, and the customer still sees "Request
+  received!" either way. Covered by a unit test that deliberately makes
+  the notification throw and asserts the submission still reports success
+- Verified with real requests, not just unit tests: submitted a real lead
+  through the actual wizard in the browser with no key set and confirmed
+  the exact notification (name, all fields, correct formatting, working
+  dashboard link) in the server console; then set a real (deliberately
+  invalid) Resend API key, resubmitted, and confirmed via server logs
+  that a real HTTP request reached `api.resend.com` and came back with
+  Resend's own `401 "API key is invalid"` — proving the request-building,
+  auth header, and error handling all work correctly, the same
+  verification pattern used for the AI concierge in Phase 5. Cleaned up
+  both test leads afterward; reverted the temporary test key
+- Also fixed while auditing this: `.env.example`'s Stripe and analytics
+  (GA/Meta Pixel/TikTok Pixel) sections were labeled "architecture-ready"
+  and "feature-detected at runtime" — greps across the whole codebase
+  confirmed neither is referenced anywhere in any code, so those claims
+  were false. Relabeled honestly as reserved names for a future phase,
+  not a switch anyone can currently flip
+- Also cleaned up: five unused default Next.js starter assets
+  (`public/file.svg`, `globe.svg`, `next.svg`, `vercel.svg`, `window.svg`)
+  left over from the initial scaffold — confirmed unreferenced anywhere in
+  `src/` before deleting, so they weren't shipping as dead weight
+- Noticed but deliberately not fixed this pass: every lead created by the
+  AI concierge is stored with `source: "CATERING_WIZARD"` — hardcoded
+  inside `submitCateringLead` regardless of caller, so a concierge-
+  originated lead is misattributed. Low current impact (`source` isn't
+  displayed anywhere in the admin UI yet), so it's flagged rather than
+  bundled into an unrelated commit; the fix is small (accept an optional
+  `source` param, have the concierge tool pass a distinct value) but needs
+  a schema migration to add that enum value
+- Not done: everything else "production readiness" usually covers —
+  branded `error.tsx`/`not-found.tsx` boundaries (the default Next.js ones
+  render today), a health-check endpoint, an actual deployment (still
+  blocked on the business choosing/buying a domain and a host — see "Open
+  business confirmations" below), Google Search Console/Analytics wiring,
+  a real load/performance pass, backup strategy for the production database
 
 ## Open business confirmations needed before launch
 
