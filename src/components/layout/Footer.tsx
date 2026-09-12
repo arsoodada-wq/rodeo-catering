@@ -31,6 +31,15 @@ const cateringLinks = [
   { href: "/wedding-catering", label: "Weddings" },
 ];
 
+const moreCateringLinks = [
+  { href: "/school-catering", label: "School Events" },
+  { href: "/sports-team-catering", label: "Sports & Teams" },
+  { href: "/party-catering", label: "Party Catering" },
+  { href: "/large-group-catering", label: "Large Groups (200+)" },
+  { href: "/burger-catering", label: "Smash Burger Catering" },
+  { href: "/chicken-catering", label: "Chicken Catering" },
+];
+
 const companyLinks = [
   { href: "/about", label: "About" },
   { href: "/catering#faq", label: "FAQs" },
@@ -48,7 +57,7 @@ export async function Footer() {
   const confirmedServiceAreas = await getConfirmedServiceAreas();
   return (
     <footer className="border-t border-ink-900/10 bg-ink-900 text-cream-50">
-      <Container className="grid grid-cols-2 gap-10 py-14 md:grid-cols-5">
+      <Container className="grid grid-cols-2 gap-10 py-14 md:grid-cols-6">
         <div className="col-span-2">
           <p className="text-lg font-extrabold tracking-tight">RODEO CATERING</p>
           <p className="mt-3 max-w-xs text-sm text-cream-100/70">
@@ -65,6 +74,7 @@ export async function Footer() {
         </div>
 
         <FooterColumn title="Catering" links={cateringLinks} />
+        <FooterColumn title="More Catering" links={moreCateringLinks} />
         <FooterColumn title="Company" links={companyLinks} />
 
         <div>

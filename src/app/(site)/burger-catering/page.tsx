@@ -1,0 +1,26 @@
+import type { Metadata } from "next";
+import { Flame, Beef, Sparkles, HandPlatter } from "lucide-react";
+import { EventLandingTemplate } from "@/components/catering/EventLandingTemplate";
+
+export const metadata: Metadata = {
+  title: "Smash Burger Catering in Worth, IL",
+  description:
+    "Smash burger catering from Rodeo Burgers and Chicken — our signature smash technique, catered for any event in Worth, IL and nearby suburbs.",
+};
+
+export default function BurgerCateringPage() {
+  return (
+    <EventLandingTemplate
+      eyebrow="Smash Burger Catering"
+      title="Smash burgers, catered."
+      intro="The same smash-burger technique from our kitchen — fresh, never frozen — brought to your event, however big or small."
+      ctaLabel="Order Burger Catering"
+      highlights={[
+        { icon: Flame, title: "Signature Smash Technique", description: "The same method that built our reputation, cooked for your event." },
+        { icon: Beef, title: "Fresh, Never Frozen", description: "No shortcuts — the same quality as in our kitchen." },
+        { icon: Sparkles, title: "Customizable Toppings", description: "Build a spread that fits your event and your guests." },
+        { icon: HandPlatter, title: "Any Event Size", description: "From an office lunch to a full-scale event." },
+      ]}
+    />
+  );
+}

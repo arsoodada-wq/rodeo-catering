@@ -11,6 +11,12 @@ const routes = [
   "/birthday-party-catering",
   "/graduation-catering",
   "/wedding-catering",
+  "/school-catering",
+  "/sports-team-catering",
+  "/party-catering",
+  "/large-group-catering",
+  "/burger-catering",
+  "/chicken-catering",
   "/about",
   "/blog",
 ];

@@ -59,7 +59,7 @@ Tracking against the 12 implementation phases from the project brief.
   surfaced there — it prerenders statically and the modal/toast/hydration
   all worked identically to dev mode
 
-## Phase 4 — Public Website 🟡 (all core pages live)
+## Phase 4 — Public Website ✅
 
 - Done: homepage, `/catering` (hub + wizard), `/corporate-catering`,
   `/live-cookout-catering`, `/birthday-party-catering`,
@@ -91,8 +91,17 @@ Tracking against the 12 implementation phases from the project brief.
   page's service-area card, and the FAQ answer all picked up the new list
   automatically (no code change needed there — they already read from
   `getConfirmedServiceAreas()`)
-- Not done: `/school-catering`, `/sports-team-catering`, `/party-catering`,
-  `/large-group-catering`, `/burger-catering`, `/chicken-catering`
+- Done: the remaining event/menu-focused landing pages — `/school-catering`,
+  `/sports-team-catering`, `/party-catering`, `/large-group-catering`,
+  `/burger-catering`, `/chicken-catering`. Same `EventLandingTemplate`
+  pattern as the other five, same "in Worth, IL" title convention, added
+  to `sitemap.ts` and to a new "More Catering" footer column (the
+  original "Catering" column already had 6 links — a 12-link single
+  column would've been an unreasonably long list, so split it in two
+  rather than cram it in). Verified all 6 build, prerender statically,
+  and render correctly in the browser
+- All pages named in the original 67-section brief now exist. Not done:
+  any additional public pages beyond what the brief specified
 
 ## Phase 5 — Catering Wizard 🟡 (wizard built, AI layer stubbed)
 
