@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash2, Loader2, Check, Copy } from "lucide-react";
+import { Plus, Trash2, Loader2, Check, Copy, FileDown } from "lucide-react";
 import { createQuote } from "@/app/actions/create-quote";
 import { updateQuote } from "@/app/actions/update-quote";
 import { computeQuoteTotals } from "@/lib/quote-math";
@@ -317,6 +317,15 @@ function LinkBox({
         <Copy className="h-3.5 w-3.5" />
         {copied ? "Copied" : "Copy"}
       </button>
+      <a
+        href={`/api/quotes/${token}/pdf`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1.5 rounded-full border border-ink-900/15 px-4 py-2 text-xs font-semibold text-ink-700 hover:border-ink-900/40"
+      >
+        <FileDown className="h-3.5 w-3.5" />
+        PDF
+      </a>
     </div>
   );
 }

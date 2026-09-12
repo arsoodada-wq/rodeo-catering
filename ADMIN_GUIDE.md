@@ -82,7 +82,11 @@ way or (once built) by an existing Super Admin.
   the actual customer. Creating a quote for a new lead automatically
   moves it to Quote Sent; the customer accepting it automatically moves
   the lead to Confirmed. See all quotes at `/admin/quotes` — click a
-  quote number (from there or from a lead's detail page) to open it
+  quote number (from there or from a lead's detail page) to open it.
+  A "Download PDF" link is always available (next to "View as customer,"
+  and again on the link box while creating/editing) — generated fresh
+  from the current numbers every time, so it's never out of date even
+  after an edit
 - **Editing a quote**: open it and change anything — line items, fees,
   discount, tax, deposit, terms, expiration — then click "Save Changes."
   The customer's link doesn't change, so this *is* how you resend an

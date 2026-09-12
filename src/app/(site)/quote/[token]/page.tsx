@@ -45,9 +45,19 @@ export default async function QuotePage({
       <p className="text-sm font-semibold uppercase tracking-wide text-rodeo-600">
         Catering Quote {quote.quoteNumber}
       </p>
-      <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink-900 md:text-4xl">
-        {quote.lead ? `For ${quote.lead.name}` : "Your Catering Quote"}
-      </h1>
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-3xl font-extrabold tracking-tight text-ink-900 md:text-4xl">
+          {quote.lead ? `For ${quote.lead.name}` : "Your Catering Quote"}
+        </h1>
+        <a
+          href={`/api/quotes/${token}/pdf`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 rounded-full border border-ink-900/15 px-4 py-2 text-sm font-semibold text-ink-700 hover:border-ink-900/40"
+        >
+          Download PDF
+        </a>
+      </div>
       {quote.expiresAt && (
         <p className="mt-2 text-sm text-ink-400">
           {isExpired ? "This quote expired on " : "Valid through "}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft, ExternalLink, FileDown } from "lucide-react";
 import { db } from "@/lib/db";
 import { QuoteBuilder } from "@/components/admin/QuoteBuilder";
 import { AccessRestricted } from "@/components/admin/AccessRestricted";
@@ -49,6 +49,14 @@ export default async function AdminQuoteDetailPage({
         >
           View as customer <ExternalLink className="h-3.5 w-3.5" />
         </Link>
+        <a
+          href={`/api/quotes/${quote.secureToken}/pdf`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1 text-sm font-semibold text-ink-500 hover:text-ink-800"
+        >
+          Download PDF <FileDown className="h-3.5 w-3.5" />
+        </a>
       </div>
       {quote.lead && (
         <p className="mt-1 text-sm text-ink-400">

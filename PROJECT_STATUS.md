@@ -202,7 +202,7 @@ Tracking against the 12 implementation phases from the project brief.
   the menu…") — the streamed text is only the assistant's actual reply,
   which is what the system prompt already keeps concise
 
-## Phase 6 — CRM / Quotes 🟡 (lead capture, quotes, and editing — no PDF)
+## Phase 6 — CRM / Quotes 🟡 (lead capture, quotes, editing, and PDF export)
 
 - Done: catering wizard creates real `Lead` rows; admin can view all leads
   and update status (`/admin/leads`), and drill into a lead detail page
@@ -255,7 +255,39 @@ Tracking against the 12 implementation phases from the project brief.
   switched to the locked "can't be edited" state. Also covered by 5 unit
   tests (`update-quote.test.ts`) for the recompute, the EXPIRED→SENT
   transition, and both lock cases. Cleaned up the test quote afterward
-- Not done: quote PDF export, follow-up reminders
+- Done: quote PDF export. `/api/quotes/[token]/pdf` renders the quote —
+  business header, customer/event details, the same line items and
+  fees/tax/discount/total/deposit/balance breakdown as the public page —
+  to a real PDF via `@react-pdf/renderer` (`renderToBuffer`, Node runtime;
+  no new binary/headless-browser dependency like Puppeteer, which matters
+  for a Next.js app that may end up on serverless hosting). Generated
+  on-demand from the live database on every request rather than cached or
+  persisted anywhere — a quote can still be edited (see above), and a
+  stored PDF would risk going stale the moment that happens, so the
+  existing `Quote.pdfUrl` schema field (present since Phase 2, unused
+  until now) stays intentionally unused rather than pointing at a file
+  that could silently drift from the real numbers. Uses the *same* trust
+  model as `/quote/[token]` itself — the unguessable token is the access
+  control, so no separate auth check, and it works identically whether a
+  customer clicks it from their quote page or an admin clicks it from the
+  dashboard. A "Download PDF" link was added in three places: the public
+  quote page, the admin quote edit screen's link box, and — since an
+  *accepted/declined* quote skips that edit screen entirely for a locked
+  message instead — the quote detail header itself, so a PDF is always
+  reachable regardless of status
+- Verified against real, pre-existing quote records (not just a
+  freshly-created test one): fetched the PDF for an unlocked $240 quote
+  and a locked/`ACCEPTED` $1,400 quote with fees, a deposit, and a
+  balance, confirmed both came back `200` with `Content-Type:
+  application/pdf` and a real `%PDF` file signature, and used the `Read`
+  tool's own PDF support to confirm the rendered page actually shows the
+  correct customer name, line items, and every total field (including the
+  fees/deposit/balance breakdown, which the simpler quote didn't
+  exercise) — not just that *a* PDF came back. Ran a full `next build`
+  and confirmed the route registers correctly
+- Not done: follow-up reminders (would need a real scheduled job — cron —
+  which needs an actual deployment target to run on; better suited to
+  Phase 12 once hosting is decided than built speculatively now)
 
 ## Phase 7 — Admin Dashboard 🟡 (auth + pricing screens)
 
