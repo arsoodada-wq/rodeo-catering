@@ -103,7 +103,7 @@ Tracking against the 12 implementation phases from the project brief.
 - All pages named in the original 67-section brief now exist. Not done:
   any additional public pages beyond what the brief specified
 
-## Phase 5 — Catering Wizard 🟡 (wizard + AI concierge both built)
+## Phase 5 — Catering Wizard ✅
 
 - Done: 8-step wizard on `/catering#builder` (event type → guests → date →
   location → style → food selections → contact → review/submit), wired to
@@ -159,10 +159,48 @@ Tracking against the 12 implementation phases from the project brief.
   with a native `<form onSubmit>`, then confirmed via a direct
   `form.requestSubmit()` call that the fix is correct (this is also just
   the more standard way to implement "Enter submits" in the first place)
-- Not done: streaming responses (each reply currently arrives all at once,
-  which is fine for the short, tool-call-heavy replies this concierge
-  gives, but would matter for longer ones), conversation persistence
-  across a page reload (a refresh starts a new chat)
+- Done: streaming replies. `runConciergeTurnStream` (`src/lib/ai/concierge.ts`)
+  drives the same tool-use loop as before, but via `client.messages.stream()`
+  instead of `.create()`, forwarding each text delta through a callback as
+  it's generated. `/api/concierge` streams these to the browser as
+  newline-delimited JSON (`{type:"delta"|"done"|"error", ...}` — a custom
+  minimal protocol, not SSE, since this is a same-origin `fetch()` chat
+  widget with no need for `EventSource`'s reconnection semantics); the
+  early rate-limit/not-configured/validation-error responses are still
+  plain JSON, and the client branches on the response's `Content-Type` to
+  tell the two apart. `ConciergeChat.tsx` reads the stream via
+  `response.body.getReader()`, buffering partial lines across chunk
+  boundaries, and appends each delta to a growing assistant bubble in
+  place of the previous all-at-once "Thinking…" wait
+- Done: conversation persistence across a page reload, via
+  `sessionStorage` (deliberately not `localStorage` — this is chat
+  history that may contain a name/email/phone typed mid-conversation, and
+  session-scoped storage means it clears when the tab actually closes
+  rather than lingering indefinitely in the browser). Restored via a lazy
+  `useState` initializer, not an effect, so a reload shows the resumed
+  conversation on the very first render rather than flashing the empty
+  greeting first. A completed (`leadSubmitted`) conversation also
+  persists, so a reload doesn't let a customer land back in an active
+  chat and accidentally submit a second lead for the same conversation.
+  Added a "Start Over" control (both mid-chat and on the post-submit
+  screen) since persistence otherwise has no way back to a fresh
+  conversation short of closing the tab
+- Verified end-to-end with real requests, not just unit tests (a new
+  `concierge.test.ts` covers the loop logic itself — streamed deltas,
+  the tool-call continuation, the lead-submitted flag, and the
+  max-iterations fallback, all against a mocked SDK stream): set a real
+  (deliberately invalid) Anthropic key, sent a real message, and
+  confirmed via server logs the request reached Anthropic's API and came
+  back with a genuine `401 authentication_error` — delivered to the
+  browser correctly as a `{type:"error"}` event through the new streaming
+  protocol, with the empty placeholder bubble removed rather than left
+  blank. Separately confirmed the persistence itself needs no API key at
+  all: sent a message, reloaded the actual page, and confirmed both the
+  greeting and the sent message were still there; clicked "Start Over,"
+  reloaded again, and confirmed the chat came back empty
+- Not done: showing the concierge's own tool calls to the user (e.g. "checking
+  the menu…") — the streamed text is only the assistant's actual reply,
+  which is what the system prompt already keeps concise
 
 ## Phase 6 — CRM / Quotes 🟡 (lead capture, quotes, and editing — no PDF)
 

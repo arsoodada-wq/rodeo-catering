@@ -44,8 +44,18 @@ export type ConciergeTurnResult = {
   leadSubmitted: boolean;
 };
 
-export async function runConciergeTurn(
-  history: ConciergeMessage[]
+/**
+ * Streams the assistant's text as it's generated (via `onDelta`) while still
+ * driving the same tool-use loop as before — tool calls themselves aren't
+ * streamed to the client, only the actual reply text, so a customer sees
+ * words appear as Claude writes them instead of a single pause-then-dump.
+ * Text from an intermediate turn (e.g. before a tool call) is streamed too;
+ * `reply` in the returned result is only the FINAL turn's text, matching
+ * what the message list should show as this turn's one assistant message.
+ */
+export async function runConciergeTurnStream(
+  history: ConciergeMessage[],
+  onDelta: (text: string) => void
 ): Promise<ConciergeTurnResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -61,13 +71,17 @@ export async function runConciergeTurn(
   let leadSubmitted = false;
 
   for (let i = 0; i < MAX_TOOL_ITERATIONS; i++) {
-    const response = await client.messages.create({
+    const stream = client.messages.stream({
       model: MODEL,
       max_tokens: 1024,
       system: buildSystemPrompt(),
       tools: conciergeTools,
       messages,
     });
+
+    stream.on("text", onDelta);
+
+    const response = await stream.finalMessage();
 
     if (response.stop_reason !== "tool_use") {
       const textBlock = response.content.find(
@@ -101,8 +115,8 @@ export async function runConciergeTurn(
     messages.push({ role: "user", content: toolResults });
   }
 
-  return {
-    reply: "I'm having trouble finishing that up — could you call us directly at " + business.phone + "?",
-    leadSubmitted,
-  };
+  const fallback =
+    "I'm having trouble finishing that up — could you call us directly at " + business.phone + "?";
+  onDelta(fallback);
+  return { reply: fallback, leadSubmitted };
 }
