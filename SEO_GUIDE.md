@@ -21,15 +21,16 @@ ranking, in rough order of impact:
    `git log` for the commit). Every new page should follow this pattern:
    `"<Service> in <City>, IL"` or `"<Service> Near <City>, IL"`
 3. **`CateringBusiness` JSON-LD** (`LocalBusinessSchema.tsx`) — address,
-   phone, `areaServed`. Currently scoped to Worth only; expand
-   `areaServed` once the business confirms additional service areas (see
-   `ServiceArea` seed data — most candidates are seeded inactive)
+   phone, `areaServed`. As of 2026-09-12 this is dynamic (reads active
+   `ServiceArea` rows) and includes a `GeoCircle` for the confirmed
+   15-mile radius plus every active city — no longer hardcoded to Worth
 4. **Location pages** — `/catering/[slug]` for each confirmed city (e.g.
-   "Catering in Palos Heights, IL"), each targeting that city's own local
-   search intent. Not built yet: blocked on the business confirming which
-   candidate suburbs are actually served, since publishing a page for a
-   city the business doesn't actually cater to would be worse than not
-   ranking for it at all
+   "Catering Near Chicago Ridge, IL"). Built 2026-09-12 for all 11 cities
+   confirmed within the 15-mile radius; `generateStaticParams` isn't used
+   (fetched dynamically per-request from `ServiceArea`, same pattern as
+   `/catering`), and the route 404s for any slug that's missing or
+   `active: false` — so a page never overclaims coverage. "Chicago" itself
+   is still unconfirmed (see `PROJECT_STATUS.md`) and has no page
 5. **Reviews and citations** — real reviews (Google, Yelp, Facebook) and
    consistent name/address/phone across every online listing. Three real
    reviews are already seeded from the business's own site; more, recent,
@@ -45,19 +46,23 @@ ranking, in rough order of impact:
   its own `metadata` (or `generateMetadata`) rather than relying on the
   default. `metadataBase` is derived from `NEXT_PUBLIC_SITE_URL` — never
   hard-code the domain in a page
-- `src/app/sitemap.ts` — lists every public route; add new public pages
-  here as they're built. Location pages under `/catering/[slug]` aren't in
-  it yet since none are published (see below)
+- `src/app/sitemap.ts` — lists every static public route, plus (async)
+  every active `/catering/[slug]` location page pulled live from the
+  database — add new static pages here as they're built, but location
+  pages need no manual addition, they follow whatever's active in
+  `/admin/service-areas`
 - `src/app/robots.ts` — allows everything except `/admin` and `/api`,
   points to the sitemap
 - `src/components/seo/LocalBusinessSchema.tsx` — `CateringBusiness`
-  JSON-LD rendered on every `(site)` page via its layout. Built only from
-  verified facts in `src/lib/site-content.ts` (name, address, phone, email,
-  socials). Deliberately omits `priceRange`, any `areaServed` beyond Worth,
-  and any review/rating data — none of that is confirmed. Don't add those
-  fields until the business confirms them; don't copy the existing
-  restaurant site's `Restaurant` schema wholesale, since its `priceRange`
-  and cuisine list describe the dine-in menu, not catering
+  JSON-LD rendered on every `(site)` page via its layout. Address/phone/
+  email/socials are still only ever the verified facts in
+  `src/lib/site-content.ts`; `areaServed` is dynamic (active `ServiceArea`
+  rows + a `GeoCircle` for the confirmed 15-mile radius). Still
+  deliberately omits `priceRange` and any review/rating data — neither is
+  confirmed. Don't add those fields until the business confirms them;
+  don't copy the existing restaurant site's `Restaurant` schema wholesale,
+  since its `priceRange` and cuisine list describe the dine-in menu, not
+  catering
 - Admin routes are `noindex, nofollow` via `src/app/admin/layout.tsx`
   metadata; legal placeholder pages are `noindex` individually
 
@@ -65,9 +70,10 @@ ranking, in rough order of impact:
 
 - **One `<h1>` per page.** Homepage sections use `<h2>` for their headings;
   keep that hierarchy intact on new pages
-- **Location pages** (`/catering/[slug]`): only publish for `ServiceArea`
-  rows with `active: true`, and add them to `sitemap.ts` when you do — see
-  `PROJECT_STATUS.md` for why most candidate suburbs are seeded inactive
+- **Location pages** (`/catering/[slug]`): the route itself enforces
+  `active: true` (404s otherwise) and `sitemap.ts` pulls the list live —
+  activating a city in `/admin/service-areas` is the only step needed to
+  publish (or unpublish) its page
 - **Canonical URLs, OG images, and noindex flags** are modeled on the
   `Page` and `BlogPost` Prisma models (`seoTitle`, `seoDescription`,
   `canonicalUrl`, `ogImageId`, `noindex`) — wire these into each page's

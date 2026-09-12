@@ -97,11 +97,15 @@ way or (once built) by an existing Super Admin.
   is what appears in the hero badge. **Only add awards the business
   actually received** — never a placeholder or aspirational one
 - **Service Areas** (`/admin/service-areas`): activate/deactivate cities,
-  toggle delivery availability, add a new city, or delete one. Only
-  Active cities show up in the footer, the catering page's service-area
-  card, and the wizard's location step — **never activate a city until
-  it's actually confirmed**, and check the "Where are you located" FAQ
-  afterward (its answer is free text and won't update itself)
+  toggle delivery availability, add a new city, or delete one. Activating
+  a city does four things immediately: it shows up in the footer, the
+  catering page's service-area card, and the wizard's location step, *and*
+  publishes a real, indexable page at `/catering/<city-slug>` (e.g.
+  "Catering Near Chicago Ridge, IL") that search engines can find via the
+  sitemap — **never activate a city until it's actually confirmed**, since
+  deactivating it later takes the page down but doesn't un-index it from
+  Google immediately. Check the "Where are you located" FAQ afterward
+  (its answer is free text and won't update itself)
 
 ## What will eventually live here
 

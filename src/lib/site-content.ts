@@ -127,7 +127,21 @@ export const reviews = [
   },
 ] as const;
 
-// Only areas the business has confirmed are listed as servable. See
-// prisma/seed.ts ServiceArea rows for the full (mostly inactive) candidate
-// list awaiting confirmation.
-export const confirmedServiceAreas = ["Worth, IL"] as const;
+// Only areas the business has confirmed are listed as servable. Confirmed
+// 2026-09-12: a ~15-mile radius from Worth. See prisma/seed.ts ServiceArea
+// rows for per-city distances and the one candidate ("Chicago") still
+// awaiting confirmation on which specific neighborhoods to include.
+export const confirmedServiceAreas = [
+  "Worth, IL",
+  "Chicago Ridge, IL",
+  "Palos Heights, IL",
+  "Palos Hills, IL",
+  "Oak Lawn, IL",
+  "Hickory Hills, IL",
+  "Alsip, IL",
+  "Burbank, IL",
+  "Bridgeview, IL",
+  "Evergreen Park, IL",
+  "Orland Park, IL",
+  "Tinley Park, IL",
+] as const;

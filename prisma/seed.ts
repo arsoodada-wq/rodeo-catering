@@ -169,9 +169,11 @@ async function main() {
     update: {},
   });
 
-  // ── Service areas — only Worth is confirmed active. Nearby suburbs are
-  // seeded inactive so the admin can enable + write real page content once
-  // the business confirms it actually delivers/caters there. ──
+  // ── Service areas. Confirmed by the business (2026-09-12): catering
+  // covers a ~15-mile radius from the Worth home base. Every suburb below
+  // was checked against that radius (straight-line distance from Worth,
+  // IL) before being marked active — see git history for the distances
+  // computed at the time. Each gets a live /catering/[slug] location page. ──
   await db.serviceArea.upsert({
     where: { slug: "worth-il" },
     create: {
@@ -185,21 +187,22 @@ async function main() {
     update: {},
   });
 
-  const candidateSuburbs = [
-    "Palos Heights",
-    "Palos Hills",
-    "Chicago Ridge",
-    "Oak Lawn",
-    "Orland Park",
-    "Tinley Park",
-    "Bridgeview",
-    "Hickory Hills",
-    "Alsip",
-    "Evergreen Park",
-    "Burbank",
-    "Chicago",
+  // City name -> straight-line distance from Worth, IL, in miles (all well
+  // within the confirmed 15-mile radius; farthest is Tinley Park at 8.3mi).
+  const confirmedSuburbs: [string, number][] = [
+    ["Chicago Ridge", 1.2],
+    ["Palos Heights", 1.7],
+    ["Palos Hills", 1.9],
+    ["Oak Lawn", 2.7],
+    ["Hickory Hills", 3.0],
+    ["Alsip", 3.4],
+    ["Burbank", 4.0],
+    ["Bridgeview", 4.2],
+    ["Evergreen Park", 5.1],
+    ["Orland Park", 6.7],
+    ["Tinley Park", 8.3],
   ];
-  for (const city of candidateSuburbs) {
+  for (const [city, distanceMiles] of confirmedSuburbs) {
     const slug = `${city.toLowerCase().replace(/\s+/g, "-")}-il`;
     await db.serviceArea.upsert({
       where: { slug },
@@ -207,13 +210,33 @@ async function main() {
         slug,
         city,
         state: "IL",
-        active: false,
-        deliveryAvailable: false,
-        notes: "REQUIRES BUSINESS CONFIRMATION before enabling a location page.",
+        active: true,
+        deliveryAvailable: true,
+        notes: `Confirmed by the business — ~${distanceMiles} mi from Worth, within the 15-mile service radius.`,
       },
       update: {},
     });
   }
+
+  // "Chicago" itself is left inactive rather than guessed at: the city is
+  // huge, and only its southwest-side neighborhoods (Mount Greenwood,
+  // Beverly, Ashburn, Clearing) actually fall inside the 15-mile radius —
+  // "Chicago" as a single blanket area would overclaim coverage of
+  // neighborhoods 20+ miles away. REQUIRES BUSINESS CONFIRMATION on which
+  // specific Chicago neighborhoods (if any) should get their own page.
+  await db.serviceArea.upsert({
+    where: { slug: "chicago-il" },
+    create: {
+      slug: "chicago-il",
+      city: "Chicago",
+      state: "IL",
+      active: false,
+      deliveryAvailable: false,
+      notes:
+        "REQUIRES BUSINESS CONFIRMATION — 'Chicago' spans a huge area; only southwest-side neighborhoods near Worth are within the 15-mile radius. Confirm specific neighborhoods before enabling.",
+    },
+    update: {},
+  });
 
   // ── Menu categories + items, adapted from the public menu. Prices are
   // intentionally null until the business sets catering pricing. ──

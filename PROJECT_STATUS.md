@@ -67,10 +67,32 @@ Tracking against the 12 implementation phases from the project brief.
   page), `/privacy-policy`, `/terms`, `/accessibility` (draft, noindexed).
   Header/Footer/mobile sticky CTA. All internal links verified working
   (`npm run build` prerenders all 13 routes)
+- Done: location pages at `/catering/[slug]`. Previously blocked on which
+  `ServiceArea` rows the business confirms — unblocked 2026-09-12: the
+  business confirmed catering covers roughly a 15-mile radius from Worth.
+  Checked every existing candidate suburb's straight-line distance from
+  Worth against that radius (all 11 fell well inside it, farthest being
+  Tinley Park at 8.3 mi) and activated them — each now has a real,
+  indexable landing page (e.g. "Catering Near Chicago Ridge, IL"), added
+  to `sitemap.ts` dynamically from the active `ServiceArea` rows. Left
+  "Chicago" itself inactive rather than guessing: it's a big city and only
+  its southwest-side neighborhoods actually fall inside 15 miles — still
+  `REQUIRES BUSINESS CONFIRMATION` on which specific neighborhoods, if
+  any, should get their own page. The `CateringBusiness` JSON-LD
+  (`LocalBusinessSchema.tsx`) was also made dynamic (was hardcoded to
+  Worth only) and now includes a `GeoCircle` for the 15-mile radius plus
+  every active city — reads live from the database instead of being
+  frozen at whatever was true when it was written, the same class of bug
+  the FAQ answer already had to be fixed for once
+- Verified end-to-end: confirmed all 12 location pages render correctly
+  and 404 for `chicago-il` (inactive) and a nonexistent slug; confirmed
+  the homepage's JSON-LD via the browser's own parsed `<script>` tag shows
+  the `GeoCircle` and all 11 cities; confirmed the footer, `/catering`
+  page's service-area card, and the FAQ answer all picked up the new list
+  automatically (no code change needed there — they already read from
+  `getConfirmedServiceAreas()`)
 - Not done: `/school-catering`, `/sports-team-catering`, `/party-catering`,
-  `/large-group-catering`, `/burger-catering`, `/chicken-catering`, and
-  location pages under `/catering/[slug]` (blocked on which `ServiceArea`
-  rows the business confirms — see seed data)
+  `/large-group-catering`, `/burger-catering`, `/chicken-catering`
 
 ## Phase 5 — Catering Wizard 🟡 (wizard built, AI layer stubbed)
 
@@ -415,7 +437,11 @@ Search the codebase for `REQUIRES BUSINESS CONFIRMATION`. Known items:
 
 - Catering pricing (all menu items/packages currently have `price: null`)
 - Minimum guest count, delivery fees
-- Service areas beyond Worth, IL (candidates seeded inactive)
+- ~~Service areas beyond Worth, IL~~ — confirmed 2026-09-12: ~15-mile
+  radius from Worth. 11 suburbs activated with real location pages (see
+  Phase 4). Still open: which specific Chicago neighborhoods, if any,
+  fall inside that radius and should get their own page — "Chicago" as a
+  whole city was deliberately left unconfirmed/inactive
 - FAQ answers (questions seeded, answers pending)
 - Vegan/Halal/Kosher accuracy (existing site is inconsistent — homepage says
   Halal, catering page says Kosher)

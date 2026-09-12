@@ -33,7 +33,7 @@ async function getActivePackages(): Promise<DisplayPackage[] | null> {
   }
 }
 
-export async function PackagesTeaser() {
+export async function PackagesTeaser({ ctaHref = "#builder" }: { ctaHref?: string } = {}) {
   const activePackages = await getActivePackages();
 
   // Falls back to the static shell list (all "Custom quote") whenever the
@@ -77,7 +77,7 @@ export async function PackagesTeaser() {
         </div>
 
         <div className="mt-8">
-          <Button href="#builder" size="lg">
+          <Button href={ctaHref} size="lg">
             Get a Quote for Your Event
           </Button>
         </div>
