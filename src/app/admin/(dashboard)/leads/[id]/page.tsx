@@ -140,8 +140,7 @@ export default async function AdminLeadDetailPage({
                 {lead.quotes.map((quote) => (
                   <li key={quote.id} className="flex items-center justify-between text-sm">
                     <Link
-                      href={`/quote/${quote.secureToken}`}
-                      target="_blank"
+                      href={`/admin/quotes/${quote.id}`}
                       className="font-semibold text-rodeo-600 hover:text-rodeo-700"
                     >
                       {quote.quoteNumber}

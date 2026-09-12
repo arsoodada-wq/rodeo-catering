@@ -3,31 +3,53 @@
 import { useState, useTransition } from "react";
 import { Plus, Trash2, Loader2, Check, Copy } from "lucide-react";
 import { createQuote } from "@/app/actions/create-quote";
+import { updateQuote } from "@/app/actions/update-quote";
 import { computeQuoteTotals } from "@/lib/quote-math";
 
 type LineItem = { description: string; quantity: number; unitPrice: number };
 
+type ExistingQuote = {
+  id: string;
+  secureToken: string;
+  items: LineItem[];
+  fees: number;
+  discount: number;
+  tax: number;
+  depositAmount: number | null;
+  termsText: string | null;
+  expiresAt: string | null; // yyyy-mm-dd, for a native date input
+};
+
 export function QuoteBuilder({
   leadId,
   defaultItems,
+  existingQuote,
 }: {
   leadId: string;
   defaultItems?: LineItem[];
+  existingQuote?: ExistingQuote;
 }) {
+  const isEditing = Boolean(existingQuote);
+
   const [items, setItems] = useState<LineItem[]>(
-    defaultItems && defaultItems.length > 0
-      ? defaultItems
-      : [{ description: "", quantity: 1, unitPrice: 0 }]
+    existingQuote && existingQuote.items.length > 0
+      ? existingQuote.items
+      : defaultItems && defaultItems.length > 0
+        ? defaultItems
+        : [{ description: "", quantity: 1, unitPrice: 0 }]
   );
-  const [fees, setFees] = useState(0);
-  const [discount, setDiscount] = useState(0);
-  const [tax, setTax] = useState(0);
-  const [depositAmount, setDepositAmount] = useState<number | "">("");
-  const [termsText, setTermsText] = useState("");
-  const [expiresAt, setExpiresAt] = useState("");
+  const [fees, setFees] = useState(existingQuote?.fees ?? 0);
+  const [discount, setDiscount] = useState(existingQuote?.discount ?? 0);
+  const [tax, setTax] = useState(existingQuote?.tax ?? 0);
+  const [depositAmount, setDepositAmount] = useState<number | "">(
+    existingQuote?.depositAmount ?? ""
+  );
+  const [termsText, setTermsText] = useState(existingQuote?.termsText ?? "");
+  const [expiresAt, setExpiresAt] = useState(existingQuote?.expiresAt ?? "");
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<{ secureToken: string } | null>(null);
+  const [saved, setSaved] = useState(false);
+  const [created, setCreated] = useState<{ secureToken: string } | null>(null);
   const [copied, setCopied] = useState(false);
 
   const { subtotal, total } = computeQuoteTotals(items, { fees, discount, tax });
@@ -46,30 +68,59 @@ export function QuoteBuilder({
 
   function submit() {
     setError(null);
+    setSaved(false);
+    const cleanItems = items.filter((i) => i.description.trim() !== "");
     startTransition(async () => {
-      const res = await createQuote({
-        leadId,
-        items: items.filter((i) => i.description.trim() !== ""),
-        fees,
-        discount,
-        tax,
-        depositAmount: depositAmount === "" ? undefined : depositAmount,
-        termsText: termsText || undefined,
-        expiresAt: expiresAt || undefined,
-      });
+      const res = existingQuote
+        ? await updateQuote({
+            quoteId: existingQuote.id,
+            items: cleanItems,
+            fees,
+            discount,
+            tax,
+            depositAmount: depositAmount === "" ? undefined : depositAmount,
+            termsText: termsText || undefined,
+            expiresAt: expiresAt || undefined,
+          })
+        : await createQuote({
+            leadId,
+            items: cleanItems,
+            fees,
+            discount,
+            tax,
+            depositAmount: depositAmount === "" ? undefined : depositAmount,
+            termsText: termsText || undefined,
+            expiresAt: expiresAt || undefined,
+          });
+
       if (res.ok) {
-        setResult({ secureToken: res.secureToken });
+        if (isEditing) {
+          setSaved(true);
+          setTimeout(() => setSaved(false), 2000);
+        } else {
+          setCreated({ secureToken: res.secureToken });
+        }
       } else {
         setError(res.error);
       }
     });
   }
 
-  if (result) {
+  const linkToken = existingQuote?.secureToken ?? created?.secureToken;
+
+  function copyLink(token: string) {
     const quoteUrl =
-      typeof window !== "undefined"
-        ? `${window.location.origin}/quote/${result.secureToken}`
-        : `/quote/${result.secureToken}`;
+      typeof window !== "undefined" ? `${window.location.origin}/quote/${token}` : `/quote/${token}`;
+    navigator.clipboard.writeText(quoteUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  // Create flow: once it's created, replace the form with a simple
+  // confirmation + link — nothing left to do on this screen. Edit flow
+  // never reaches this: it shows the form and the link together instead,
+  // since there's usually more than one round of edits.
+  if (created && !isEditing) {
     return (
       <div className="rounded-2xl border border-rodeo-200 bg-rodeo-50 p-6">
         <div className="flex items-center gap-2 text-rodeo-700">
@@ -79,19 +130,8 @@ export function QuoteBuilder({
         <p className="mt-2 text-sm text-ink-600">
           Send this link to the customer — it&apos;s the only way to view this quote.
         </p>
-        <div className="mt-3 flex items-center gap-2">
-          <input readOnly value={quoteUrl} className="input flex-1 bg-white" />
-          <button
-            onClick={() => {
-              navigator.clipboard.writeText(quoteUrl);
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
-            }}
-            className="flex items-center gap-1.5 rounded-full bg-rodeo-500 px-4 py-2 text-xs font-semibold text-white hover:bg-rodeo-600"
-          >
-            <Copy className="h-3.5 w-3.5" />
-            {copied ? "Copied" : "Copy"}
-          </button>
+        <div className="mt-3">
+          <LinkBox token={created.secureToken} copied={copied} onCopy={copyLink} />
         </div>
       </div>
     );
@@ -99,7 +139,16 @@ export function QuoteBuilder({
 
   return (
     <div className="rounded-2xl border border-ink-900/8 bg-white p-6">
-      <h3 className="font-bold text-ink-900">Create a Quote</h3>
+      <h3 className="font-bold text-ink-900">{isEditing ? "Edit This Quote" : "Create a Quote"}</h3>
+
+      {isEditing && linkToken && (
+        <div className="mt-3 rounded-xl bg-cream-100 p-3">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-400">
+            Customer link — saving changes updates this same link
+          </p>
+          <LinkBox token={linkToken} copied={copied} onCopy={copyLink} />
+        </div>
+      )}
 
       <div className="mt-4 space-y-3">
         {items.map((item, i) => (
@@ -234,11 +283,40 @@ export function QuoteBuilder({
           disabled={pending || items.every((i) => !i.description.trim())}
           className="flex items-center gap-1.5 rounded-full bg-rodeo-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-rodeo-600 disabled:opacity-50"
         >
-          {pending && <Loader2 className="h-4 w-4 animate-spin" />}
-          Create & Get Link
+          {pending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : saved ? (
+            <Check className="h-4 w-4" />
+          ) : null}
+          {isEditing ? (saved ? "Saved" : "Save Changes") : "Create & Get Link"}
         </button>
       </div>
       {error && <p className="mt-2 text-xs text-rodeo-600">{error}</p>}
+    </div>
+  );
+}
+
+function LinkBox({
+  token,
+  copied,
+  onCopy,
+}: {
+  token: string;
+  copied: boolean;
+  onCopy: (token: string) => void;
+}) {
+  const quoteUrl =
+    typeof window !== "undefined" ? `${window.location.origin}/quote/${token}` : `/quote/${token}`;
+  return (
+    <div className="flex items-center gap-2">
+      <input readOnly value={quoteUrl} className="input flex-1 bg-white" />
+      <button
+        onClick={() => onCopy(token)}
+        className="flex items-center gap-1.5 rounded-full bg-rodeo-500 px-4 py-2 text-xs font-semibold text-white hover:bg-rodeo-600"
+      >
+        <Copy className="h-3.5 w-3.5" />
+        {copied ? "Copied" : "Copy"}
+      </button>
     </div>
   );
 }

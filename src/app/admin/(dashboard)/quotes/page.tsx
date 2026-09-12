@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ExternalLink } from "lucide-react";
 import { db } from "@/lib/db";
 import { AccessRestricted } from "@/components/admin/AccessRestricted";
 import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
@@ -43,7 +43,7 @@ export default async function AdminQuotesPage() {
     <div>
       <h1 className="text-2xl font-extrabold tracking-tight text-ink-900">Quotes</h1>
       <p className="mt-1 text-sm text-ink-400">
-        Created from a lead&apos;s detail page. Click a quote number to view it as the customer would.
+        Created from a lead&apos;s detail page. Click a quote number to view or edit it.
       </p>
 
       <div className="mt-6 overflow-x-auto rounded-2xl border border-ink-900/8 bg-white">
@@ -66,13 +66,22 @@ export default async function AdminQuotesPage() {
               {data.quotes.map((quote) => (
                 <tr key={quote.id}>
                   <td className="p-4">
-                    <Link
-                      href={`/quote/${quote.secureToken}`}
-                      target="_blank"
-                      className="font-semibold text-rodeo-600 hover:text-rodeo-700"
-                    >
-                      {quote.quoteNumber}
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/admin/quotes/${quote.id}`}
+                        className="font-semibold text-rodeo-600 hover:text-rodeo-700"
+                      >
+                        {quote.quoteNumber}
+                      </Link>
+                      <Link
+                        href={`/quote/${quote.secureToken}`}
+                        target="_blank"
+                        title="View as customer"
+                        className="text-ink-300 hover:text-rodeo-600"
+                      >
+                        <ExternalLink className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
                   </td>
                   <td className="p-4 text-ink-600">
                     {quote.lead ? (

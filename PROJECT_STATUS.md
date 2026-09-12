@@ -123,7 +123,7 @@ Tracking against the 12 implementation phases from the project brief.
 - Not done: the natural-language AI concierge layer on top of this wizard
   (section 13), `get_*` server-side tool functions for it (section 15)
 
-## Phase 6 — CRM / Quotes 🟡 (lead capture + quotes, no PDF)
+## Phase 6 — CRM / Quotes 🟡 (lead capture, quotes, and editing — no PDF)
 
 - Done: catering wizard creates real `Lead` rows; admin can view all leads
   and update status (`/admin/leads`), and drill into a lead detail page
@@ -154,8 +154,29 @@ Tracking against the 12 implementation phases from the project brief.
   whole time (verified via direct query) — looks like a dev-mode
   fast-refresh race on the server-action-triggered soft navigation, not
   incorrect data or logic
-- Not done: quote PDF export, an editing/re-send flow for an existing
-  quote, follow-up reminders
+- Done: editing and resending a quote. `/admin/quotes/[id]` (linked from
+  both `/admin/quotes` and a lead's quote list) lets an admin change line
+  items, fees/discount/tax/deposit/terms/expiration and save — the
+  server action (`update-quote.ts`) recomputes totals through the same
+  shared `computeQuoteTotals` the create flow uses, replaces the line
+  items in a transaction, and keeps the *same* `secureToken`. There's no
+  separate "resend" step because there's nothing to resend: the customer's
+  link always renders whatever's currently in the database, so saving an
+  edit is the resend. A quote that lapsed to `EXPIRED` is automatically
+  brought back to `SENT` the moment it's edited, reopening the same link
+  to accepting. A quote the customer already `ACCEPTED` or `DECLINED` is
+  locked — the edit page shows why instead of a form, since changing the
+  record of what they already agreed to isn't editing, it's rewriting
+  history; the admin creates a fresh quote instead
+- Verified end-to-end: created a real quote, edited its unit price through
+  `/admin/quotes/[id]`, confirmed the total recalculated correctly and the
+  `secureToken` stayed identical via a direct database query, confirmed
+  the *same* public link showed the updated total with no separate resend
+  action, then accepted it and confirmed the edit page immediately
+  switched to the locked "can't be edited" state. Also covered by 5 unit
+  tests (`update-quote.test.ts`) for the recompute, the EXPIRED→SENT
+  transition, and both lock cases. Cleaned up the test quote afterward
+- Not done: quote PDF export, follow-up reminders
 
 ## Phase 7 — Admin Dashboard 🟡 (auth + pricing screens)
 

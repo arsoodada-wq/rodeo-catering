@@ -76,7 +76,17 @@ way or (once built) by an existing Super Admin.
   their end; the link itself is the access control, so only send it to
   the actual customer. Creating a quote for a new lead automatically
   moves it to Quote Sent; the customer accepting it automatically moves
-  the lead to Confirmed. See all quotes at `/admin/quotes`
+  the lead to Confirmed. See all quotes at `/admin/quotes` — click a
+  quote number (from there or from a lead's detail page) to open it
+- **Editing a quote**: open it and change anything — line items, fees,
+  discount, tax, deposit, terms, expiration — then click "Save Changes."
+  The customer's link doesn't change, so this *is* how you resend an
+  updated quote: they just see the new numbers next time they open the
+  same link. A quote that expired gets automatically reopened (back to
+  "Sent") the moment you save an edit to it. Once a customer has
+  **accepted or declined** a quote, it locks — you can't edit the record
+  of what they agreed to. If the event changed enough to need new numbers
+  at that point, create a fresh quote from the lead's page instead
 - **Menu & Pricing** (`/admin/menu`): every menu item grouped by category —
   set a price, choose flat vs. per-person pricing, and toggle availability.
   Items with no price still show on the site, marked "available on
@@ -116,7 +126,7 @@ way or (once built) by an existing Super Admin.
   Service Areas are the exception, which already support adding new
   entries directly)
 - Delivery fees (a `DeliveryFee` model exists per service area; no editor yet)
-- Quote PDF export, editing/re-sending an existing quote, orders
+- Quote PDF export, orders
 - Managing blog posts and landing pages
 - Managing SEO metadata per page
 - Managing social content calendar and outreach CRM
