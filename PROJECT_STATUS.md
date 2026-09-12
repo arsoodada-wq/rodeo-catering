@@ -598,7 +598,7 @@ and cookie/session config. Findings and what was done about each:
   database, end-to-end browser tests (Playwright or similar) for the
   wizard → lead → quote → accept flow
 
-## Phase 12 — Production readiness 🟡 (email notifications done)
+## Phase 12 — Production readiness 🟡 (email notifications, error pages, health check done)
 
 - Done: real new-lead email notifications, closing a gap `.env.example`
   had been documenting as if it already worked (`RESEND_API_KEY`,
@@ -646,12 +646,39 @@ and cookie/session config. Findings and what was done about each:
   bundled into an unrelated commit; the fix is small (accept an optional
   `source` param, have the concierge tool pass a distinct value) but needs
   a schema migration to add that enum value
-- Not done: everything else "production readiness" usually covers —
-  branded `error.tsx`/`not-found.tsx` boundaries (the default Next.js ones
-  render today), a health-check endpoint, an actual deployment (still
-  blocked on the business choosing/buying a domain and a host — see "Open
-  business confirmations" below), Google Search Console/Analytics wiring,
-  a real load/performance pass, backup strategy for the production database
+- Done: branded error/not-found pages, replacing Next.js's generic
+  default ones. `(site)/not-found.tsx` and `(site)/error.tsx` render
+  within the normal header/footer for a 404 or crash inside an actual
+  page (e.g. an inactive service-area or blog slug calling `notFound()`);
+  a true root-level `not-found.tsx` (deliberately bare — there's no
+  matching layout tree to attach header/footer to for a URL with no
+  route at all) covers a plain mistyped URL; `admin/error.tsx` gives the
+  dashboard its own crash page instead of showing the public site's
+  marketing CTA; `global-error.tsx` is the last-resort catch for a crash
+  in the root layout itself, deliberately dependency-free (inline styles,
+  no imports of app modules) so it can't fail for the same reason the
+  layout did. Found and fixed a related bug while verifying this: Next.js
+  doesn't apply a `not-found.tsx`'s own `metadata` export when a page
+  calls `notFound()` manually (only for a real routing-level 404) — the
+  page's own already-resolved `generateMetadata` return value sticks
+  instead. `catering/[slug]` and `blog/[slug]` were both returning `{}`
+  for a missing/inactive item, which silently fell back to the site's
+  default indexable title instead of a noindexed "Page Not Found" — fixed
+  both to return that explicitly. Verified every case for real: a
+  deliberately-thrown test error under `(site)/` and under `admin/`
+  (each removed immediately after confirming its boundary caught it), a
+  real mistyped URL, and the fixed `/catering/chicago-il` title
+- Done: `/api/health` — checks the database with a real query, returns
+  503 if unreachable. For a hosting platform's or uptime monitor's health
+  check once deployed, not a page for humans (already excluded from
+  crawling — `robots.txt` already disallowed all of `/api`). Deliberately
+  checks only the database, not optional integrations like Resend or
+  Anthropic, since this app already fails safe without those — a missing
+  API key isn't the same as the site being down
+- Not done: an actual deployment (still blocked on the business
+  choosing/buying a domain and a host — see "Open business confirmations"
+  below), Google Search Console/Analytics wiring, a real load/performance
+  pass, backup strategy for the production database
 
 ## Open business confirmations needed before launch
 

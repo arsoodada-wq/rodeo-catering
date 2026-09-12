@@ -17,7 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPublishedBlogPostBySlug(slug);
-  if (!post) return {};
+  if (!post) return { title: "Page Not Found", robots: { index: false, follow: false } };
 
   const title = post.seoTitle || post.title;
   const description = post.seoDescription || excerpt(post.content, 160);

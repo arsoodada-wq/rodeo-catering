@@ -23,7 +23,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const area = await getServiceArea(slug);
-  if (!area || !area.active) return {};
+  if (!area || !area.active) return { title: "Page Not Found", robots: { index: false, follow: false } };
 
   return {
     title: `Catering Near ${area.city}, ${area.state}`,
