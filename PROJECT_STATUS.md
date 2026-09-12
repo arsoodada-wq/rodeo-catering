@@ -103,7 +103,7 @@ Tracking against the 12 implementation phases from the project brief.
 - All pages named in the original 67-section brief now exist. Not done:
   any additional public pages beyond what the brief specified
 
-## Phase 5 — Catering Wizard 🟡 (wizard built, AI layer stubbed)
+## Phase 5 — Catering Wizard 🟡 (wizard + AI concierge both built)
 
 - Done: 8-step wizard on `/catering#builder` (event type → guests → date →
   location → style → food selections → contact → review/submit), wired to
@@ -120,8 +120,49 @@ Tracking against the 12 implementation phases from the project brief.
   24-hour server-side floor as defense in depth against bypassing the UI.
   Single source of truth is `cateringPolicy.minLeadTimeHours` in
   `src/lib/site-content.ts` — the public FAQ answer reads from it too
-- Not done: the natural-language AI concierge layer on top of this wizard
-  (section 13), `get_*` server-side tool functions for it (section 15)
+- Done: the natural-language AI concierge layer (section 13) with its
+  `get_*`/`submit_*` tool functions (section 15). On `/catering`, a tab
+  switcher ("Chat with Us" / "Guided Builder") lets a visitor either
+  describe their event in plain language or use the original step-by-step
+  form — same lead pipeline either way. Uses the Claude API
+  (`@anthropic-ai/sdk`) with four tools: `get_menu_and_packages`,
+  `get_service_areas`, and `check_event_date` are read-only lookups
+  against the live database (never invented — the system prompt
+  explicitly forbids stating a price, area, or policy without calling the
+  matching tool first); `submit_catering_lead` calls the *exact same*
+  `submitCateringLead` server action the guided wizard uses, so a lead
+  from either path gets identical validation and lands in the same
+  `Lead` table. The system prompt requires the AI to summarize what it
+  has and get an explicit yes before submitting — it can't silently
+  create a lead mid-conversation
+- The whole feature is optional and fails safe: with no `ANTHROPIC_API_KEY`
+  set, `/catering` shows only the guided builder — no tab switcher, no
+  dead UI, nothing implying a feature that isn't there. Rate-limited
+  per-IP (30 messages/hour) on top of the existing per-IP limit already on
+  lead submission itself. Model is configurable via `ANTHROPIC_MODEL`
+  (defaults to `claude-sonnet-5` — a cost/quality balance appropriate for
+  a chat that's mostly structured extraction and tool calls, not deep
+  reasoning; documented in `.env.example` so the business can trade up to
+  Opus or down to Haiku)
+- Verified end-to-end with real requests, not just code review: confirmed
+  `/catering` shows the plain wizard with zero AI UI when
+  `ANTHROPIC_API_KEY` is unset; confirmed the tab switcher and chat
+  interface appear correctly once a key is configured; sent a real
+  message through the full pipeline (browser → rate limiter → Anthropic
+  API → error handling → UI) and confirmed via server logs that the only
+  failure was the test key itself being rejected (`401
+  authentication_error`) — proving every other piece of the plumbing
+  works, since no real key was available to test a full conversation.
+  Found and fixed a real bug in the process: the chat input's Enter-to-
+  send only worked via a raw keydown check, which this browser
+  automation's synthesized Enter keypress didn't trigger — replaced it
+  with a native `<form onSubmit>`, then confirmed via a direct
+  `form.requestSubmit()` call that the fix is correct (this is also just
+  the more standard way to implement "Enter submits" in the first place)
+- Not done: streaming responses (each reply currently arrives all at once,
+  which is fine for the short, tool-call-heavy replies this concierge
+  gives, but would matter for longer ones), conversation persistence
+  across a page reload (a refresh starts a new chat)
 
 ## Phase 6 — CRM / Quotes 🟡 (lead capture, quotes, and editing — no PDF)
 

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
-import { CateringWizard } from "@/components/catering/CateringWizard";
+import { BuilderSection } from "@/components/catering/BuilderSection";
 import { PackagesTeaser } from "@/components/catering/PackagesTeaser";
 import { ServiceAreaAndFaq } from "@/components/home/ServiceAreaAndFaq";
 import { business } from "@/lib/site-content";
@@ -40,7 +40,10 @@ export default async function CateringPage() {
 
       <section id="builder" className="scroll-mt-20 py-16 md:py-20">
         <Container>
-          <CateringWizard confirmedServiceAreas={confirmedServiceAreas} />
+          <BuilderSection
+            confirmedServiceAreas={confirmedServiceAreas}
+            aiConciergeEnabled={Boolean(process.env.ANTHROPIC_API_KEY)}
+          />
         </Container>
       </section>
 
