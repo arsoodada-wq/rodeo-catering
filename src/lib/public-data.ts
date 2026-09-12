@@ -51,3 +51,24 @@ export async function getConfirmedServiceAreas(): Promise<string[]> {
     return [...fallbackServiceAreas];
   }
 }
+
+export async function getPublishedBlogPosts() {
+  try {
+    return await db.blogPost.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: { publishedAt: "desc" },
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function getPublishedBlogPostBySlug(slug: string) {
+  try {
+    const post = await db.blogPost.findUnique({ where: { slug } });
+    if (!post || post.status !== "PUBLISHED") return null;
+    return post;
+  } catch {
+    return null;
+  }
+}

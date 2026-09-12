@@ -341,11 +341,64 @@ Tracking against the 12 implementation phases from the project brief.
   templated), so it will drift from the real service-area list unless
   manually updated — the Service Areas admin page reminds admins of this
 
-## Phase 8 — CMS / SEO 🟡 (SEO fundamentals done)
+## Phase 8 — CMS / SEO 🟡 (SEO fundamentals + blog CMS done)
 
 - Done: `sitemap.xml`, `robots.txt`, `CateringBusiness` JSON-LD structured
   data (verified facts only — see `SEO_GUIDE.md`)
-- Not done: page editor, blog CMS, per-page SEO editing UI
+- Done: a real blog CMS on the existing `BlogPost` schema (modeled in
+  Phase 2, unused until now — same situation as Phase 9's social/outreach
+  tables). `/admin/blog` lists every post (draft and published) with a
+  "Write a new post" form that auto-generates a URL slug from the title;
+  `/admin/blog/[id]` is the full editor — title, an editable slug (with a
+  live "view" link once published), category, tags, plain-text content
+  (paragraphs separated by a blank line — deliberately not a rich-text/
+  HTML editor, since every author here is a trusted admin and this avoids
+  the XSS surface a `dangerouslySetInnerHTML` renderer would introduce for
+  no real benefit yet), and a "search appearance" section for an optional
+  SEO title/description override and canonical URL. A post stays invisible
+  to the public site until its status is explicitly set to Published; the
+  first time it's published, `publishedAt` is stamped and then preserved
+  across later draft/republish cycles rather than reset
+- Public side: `/blog` lists published posts (newest first) with an
+  auto-generated excerpt when no SEO description is set; `/blog/[slug]`
+  renders the full post, falls back to the raw title/an excerpt for
+  `<title>`/meta description when no SEO override is set, respects a
+  custom canonical URL when set, and emits `BlogPosting` JSON-LD
+  (headline, dates, author/publisher) alongside the existing
+  `CateringBusiness` schema already on every page. A draft, deleted, or
+  nonexistent slug 404s rather than rendering anything, same reasoning as
+  the service-area pages. Published posts are added to `sitemap.xml`
+  dynamically, same pattern as active service areas
+- Reused rather than duplicated: the same `slugify()` from Phase 11 (slug
+  generation + uniqueness check, erroring rather than silently
+  auto-suffixing on collision — consistent with how Service Areas already
+  handles this), the same `CONTENT_MANAGE` permission FAQs/Reviews/Awards
+  already use rather than adding a new one, and the same create → redirect
+  → full-editor flow Phase 9's outreach contacts just established
+- Found and fixed a real bug while verifying, not just reviewing: the
+  blog post's SEO title fallback manually appended
+  "| Rodeo Burgers and Chicken Catering", but the root layout already
+  applies a `"%s | Rodeo Burgers & Chicken Catering"` title template to
+  every page — the two combined to render the brand name twice in the
+  browser tab and in search results. Fixed by letting the fallback be the
+  bare title, matching how every other page in this app already does it
+- Verified end-to-end against the real local database: created a real
+  post through the UI, filled in two paragraphs of content, tags, and
+  published it; confirmed via a direct `psql` query that status, tags, and
+  `publishedAt` all saved correctly; confirmed the live page rendered both
+  paragraphs, the tags, and a correctly-formed `BlogPosting` JSON-LD block
+  (parsed and checked in the browser, not just eyeballed); confirmed the
+  post's URL appeared in `/sitemap.xml`; confirmed `/blog` fell back to its
+  "coming soon" empty state again after deleting the post; ran a full
+  `next build` and confirmed `/admin/blog`, `/admin/blog/[id]`, and
+  `/blog/[slug]` all register correctly as dynamic routes
+- Not done: a generic block-based page editor for the `Page` model (its
+  `content Json` field implies a real page-builder UI — a materially
+  bigger, less-specified undertaking than the blog CMS, deliberately left
+  for a dedicated pass rather than rushed alongside it), per-page SEO
+  editing for the existing static marketing pages (homepage, catering,
+  event/location pages) — those titles/descriptions are still hardcoded in
+  each page's `generateMetadata`/`metadata` export, not database-editable
 
 ## Phase 9 — Marketing ✅
 

@@ -14,6 +14,7 @@ import {
   LogOut,
   CalendarDays,
   Handshake,
+  Newspaper,
 } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
 import { PERMISSIONS, roleHasPermission, type PermissionKey } from "@/lib/permissions";
@@ -28,6 +29,7 @@ const navLinks: { href: string; label: string; icon: typeof LayoutDashboard; per
   { href: "/admin/faqs", label: "FAQs", icon: HelpCircle, permission: PERMISSIONS.CONTENT_MANAGE },
   { href: "/admin/reviews", label: "Reviews", icon: Star, permission: PERMISSIONS.CONTENT_MANAGE },
   { href: "/admin/awards", label: "Awards", icon: Trophy, permission: PERMISSIONS.CONTENT_MANAGE },
+  { href: "/admin/blog", label: "Blog", icon: Newspaper, permission: PERMISSIONS.CONTENT_MANAGE },
   { href: "/admin/social", label: "Social Calendar", icon: CalendarDays, permission: PERMISSIONS.MARKETING_MANAGE },
   { href: "/admin/outreach", label: "Outreach", icon: Handshake, permission: PERMISSIONS.MARKETING_MANAGE },
 ];

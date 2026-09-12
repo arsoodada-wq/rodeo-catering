@@ -30,6 +30,15 @@ async function getActiveServiceAreaSlugs(): Promise<string[]> {
   }
 }
 
+async function getPublishedBlogSlugs(): Promise<string[]> {
+  try {
+    const posts = await db.blogPost.findMany({ where: { status: "PUBLISHED" }, select: { slug: true } });
+    return posts.map((p) => p.slug);
+  } catch {
+    return [];
+  }
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const staticEntries = routes.map((route) => ({
     url: `${siteUrl}${route}`,
@@ -46,5 +55,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticEntries, ...locationEntries];
+  const blogSlugs = await getPublishedBlogSlugs();
+  const blogEntries = blogSlugs.map((slug) => ({
+    url: `${siteUrl}/blog/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+
+  return [...staticEntries, ...locationEntries, ...blogEntries];
 }

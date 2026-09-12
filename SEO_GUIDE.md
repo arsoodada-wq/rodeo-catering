@@ -1,8 +1,10 @@
 # SEO Guide
 
-_Partial — the admin SEO controls (Phase 8) don't exist yet, but the
-code-level conventions below are in place and should be followed as more
-pages are built._
+_Partial — the blog has its own SEO title/description/canonical overrides
+(Phase 8, 2026-09-12), but there's still no per-page SEO editing UI for the
+static marketing pages (homepage, catering, event/location pages) or a
+generic page-builder for the `Page` model. The code-level conventions below
+are in place and should be followed as more pages are built._
 
 ## Targeting local ("near me") search
 
@@ -38,6 +40,11 @@ ranking, in rough order of impact:
 6. **Google Search Console** — not wired up yet (env vars stubbed in
    `.env.example`). Needed to see what people are actually searching to
    find the site and to request faster indexing of new pages
+7. **Blog content** (`/blog`, built 2026-09-12) — genuinely useful local
+   content (e.g. "how much food for a 50-guest graduation party in Worth,
+   IL") is a real, if slower, ranking lever for the exact "catering near
+   me"-style queries above. Empty until an admin actually writes and
+   publishes posts at `/admin/blog` — see `ADMIN_GUIDE.md`
 
 ## What's implemented today
 
@@ -47,10 +54,18 @@ ranking, in rough order of impact:
   default. `metadataBase` is derived from `NEXT_PUBLIC_SITE_URL` — never
   hard-code the domain in a page
 - `src/app/sitemap.ts` — lists every static public route, plus (async)
-  every active `/catering/[slug]` location page pulled live from the
-  database — add new static pages here as they're built, but location
-  pages need no manual addition, they follow whatever's active in
-  `/admin/service-areas`
+  every active `/catering/[slug]` location page and every Published
+  `/blog/[slug]` post, both pulled live from the database — add new static
+  pages here as they're built, but location pages and blog posts need no
+  manual addition, they follow whatever's active/published in the admin
+- `src/app/(site)/blog/[slug]/page.tsx` — `generateMetadata` uses the
+  post's `seoTitle`/`seoDescription` when set, otherwise falls back to the
+  raw title and an auto-generated excerpt (`excerpt()` in
+  `src/lib/format.ts`) — never manually re-append the site's brand name to
+  a title here, `src/app/layout.tsx`'s title template already does that
+  once for every page. Also emits `BlogPosting` JSON-LD alongside the
+  `CateringBusiness` schema already on every page. A draft, deleted, or
+  nonexistent slug 404s rather than rendering, same as location pages
 - `src/app/robots.ts` — allows everything except `/admin` and `/api`,
   points to the sitemap
 - `src/components/seo/LocalBusinessSchema.tsx` — `CateringBusiness`
@@ -76,13 +91,21 @@ ranking, in rough order of impact:
   publish (or unpublish) its page
 - **Canonical URLs, OG images, and noindex flags** are modeled on the
   `Page` and `BlogPost` Prisma models (`seoTitle`, `seoDescription`,
-  `canonicalUrl`, `ogImageId`, `noindex`) — wire these into each page's
-  `generateMetadata` as the CMS is built, rather than inventing a parallel
-  system
+  `canonicalUrl`, `ogImageId`, `noindex`). `BlogPost` is wired up
+  end-to-end (`seoTitle`/`seoDescription`/`canonicalUrl` all read in
+  `/blog/[slug]`'s `generateMetadata`; `ogImageId` still isn't, since no
+  image upload/media picker UI exists yet for either model) — follow the
+  same wiring, not a parallel system, whenever the `Page` model gets its
+  own editor
 
 ## Still to build
 
-- Per-page SEO editing UI in the admin dashboard
+- Per-page SEO editing UI for the static marketing pages (homepage,
+  catering, event/location pages) — their titles/descriptions are still
+  hardcoded in each page file, not database-editable like blog posts now are
+- A generic block-based editor for the `Page` model, and `ogImageId`
+  support for both `Page` and `BlogPost` (needs a media upload/picker UI
+  first)
 - FAQ schema (only once real, business-confirmed answers exist — see the
   inactive FAQ seed rows in `prisma/seed.ts`)
 - Review schema (only with real, sourced permalinks — see `PROJECT_STATUS.md`)

@@ -9,3 +9,10 @@
 export function formatEventDate(date: Date | string): string {
   return new Date(date).toLocaleDateString(undefined, { timeZone: "UTC" });
 }
+
+/** First plain-text paragraph of blog content, trimmed to a search-result-friendly length. */
+export function excerpt(content: string, maxLength = 160): string {
+  const firstParagraph = content.split(/\n\s*\n/)[0]?.trim() ?? "";
+  if (firstParagraph.length <= maxLength) return firstParagraph;
+  return `${firstParagraph.slice(0, maxLength).trimEnd()}…`;
+}

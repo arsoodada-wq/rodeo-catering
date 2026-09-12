@@ -118,6 +118,13 @@ way or (once built) by an existing Super Admin.
   deactivating it later takes the page down but doesn't un-index it from
   Google immediately. Check the "Where are you located" FAQ afterward
   (its answer is free text and won't update itself)
+- **Blog** (`/admin/blog`): write and publish planning guides that live at
+  `/blog`. A new post starts as a draft with an auto-generated URL slug
+  (editable later) — it's never visible on the public site until you set
+  its status to Published. Content is plain text (separate paragraphs with
+  a blank line); there's an optional "search appearance" section to
+  override the page title/description shown in Google, otherwise it falls
+  back to the post title and an excerpt of the content automatically
 - **Social Calendar** (`/admin/social`): plan and track social posts —
   platform, category, hook/caption/CTA, hashtags, a video concept and shot
   list for video-first platforms, status (Idea, Draft, Approved, Scheduled,
