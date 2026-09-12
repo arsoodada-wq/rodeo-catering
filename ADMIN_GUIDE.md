@@ -1,8 +1,9 @@
 # Admin Guide
 
-_Partial — login, leads, and pricing work today and have been verified
-against a real database; most other management screens listed below don't
-exist yet (see `PROJECT_STATUS.md`, Phase 7)._
+_Partial — login, leads, quotes, pricing, content, and marketing screens
+work today and have been verified against a real database; a few screens
+listed under "What will eventually live here" don't exist yet (see
+`PROJECT_STATUS.md`)._
 
 ## Roles and permissions
 
@@ -23,6 +24,7 @@ Default assignments (a reasonable starting point set during development,
 | Manage pricing (menu & packages) | ✅ | | |
 | Manage service areas | ✅ | | |
 | Manage content (FAQs, reviews, awards) | ✅ | | ✅ |
+| Manage marketing (social calendar, outreach) | ✅ | | ✅ |
 
 A user who lacks a permission sees the sidebar link disappear entirely, and
 is shown a plain "Access restricted" message if they navigate to the URL
@@ -116,6 +118,22 @@ way or (once built) by an existing Super Admin.
   deactivating it later takes the page down but doesn't un-index it from
   Google immediately. Check the "Where are you located" FAQ afterward
   (its answer is free text and won't update itself)
+- **Social Calendar** (`/admin/social`): plan and track social posts —
+  platform, category, hook/caption/CTA, hashtags, a video concept and shot
+  list for video-first platforms, status (Idea, Draft, Approved, Scheduled,
+  Published), and a target date. This is a planning tool only — nothing
+  here posts to any platform automatically; publishing still happens
+  directly on Instagram/Facebook/TikTok/YouTube, and this just tracks
+  what's queued up and what already went out (paste the live URL into
+  "Published URL" once it does)
+- **Outreach** (`/admin/outreach`): a lightweight CRM for local partnership
+  and backlink outreach — venues, schools, churches, chambers of commerce,
+  bloggers, anyone worth a relationship for referrals or a link back to the
+  site. Add a contact, then open it to log every call/email/meeting as a
+  dated activity with notes, their response, and an optional follow-up
+  date — the status (Prospect, Contacted, Responded, Interested, Link
+  Acquired, or Not Interested) tracks where things stand at a glance from
+  the list view
 
 ## What will eventually live here
 
@@ -129,8 +147,6 @@ way or (once built) by an existing Super Admin.
 - Quote PDF export, orders
 - Managing blog posts and landing pages
 - Managing SEO metadata per page
-- Managing social content calendar and outreach CRM
-- Managing users and permissions
 
 ## In the meantime
 

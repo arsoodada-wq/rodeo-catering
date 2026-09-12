@@ -12,6 +12,8 @@ import {
   ShieldCheck,
   UserCog,
   LogOut,
+  CalendarDays,
+  Handshake,
 } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
 import { PERMISSIONS, roleHasPermission, type PermissionKey } from "@/lib/permissions";
@@ -26,6 +28,8 @@ const navLinks: { href: string; label: string; icon: typeof LayoutDashboard; per
   { href: "/admin/faqs", label: "FAQs", icon: HelpCircle, permission: PERMISSIONS.CONTENT_MANAGE },
   { href: "/admin/reviews", label: "Reviews", icon: Star, permission: PERMISSIONS.CONTENT_MANAGE },
   { href: "/admin/awards", label: "Awards", icon: Trophy, permission: PERMISSIONS.CONTENT_MANAGE },
+  { href: "/admin/social", label: "Social Calendar", icon: CalendarDays, permission: PERMISSIONS.MARKETING_MANAGE },
+  { href: "/admin/outreach", label: "Outreach", icon: Handshake, permission: PERMISSIONS.MARKETING_MANAGE },
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

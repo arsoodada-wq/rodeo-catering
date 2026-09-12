@@ -15,6 +15,7 @@ export const PERMISSIONS = {
   PRICING_MANAGE: "pricing.manage",
   SERVICE_AREAS_MANAGE: "service_areas.manage",
   CONTENT_MANAGE: "content.manage",
+  MARKETING_MANAGE: "marketing.manage",
 } as const;
 
 export type PermissionKey = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];

@@ -48,6 +48,7 @@ async function main() {
     { key: "pricing.manage", label: "Manage pricing", description: "Edit menu item and package prices." },
     { key: "service_areas.manage", label: "Manage service areas", description: "Activate/deactivate cities and delivery." },
     { key: "content.manage", label: "Manage content", description: "Edit FAQs, reviews, and awards." },
+    { key: "marketing.manage", label: "Manage marketing", description: "Plan social content and track outreach contacts." },
   ];
   const permissionRecords = new Map<string, string>();
   for (const p of permissionDefs) {
@@ -62,10 +63,17 @@ async function main() {
   const defaultRolePermissions: { role: "MANAGER" | "STAFF" | "MARKETING"; keys: string[] }[] = [
     {
       role: "MANAGER",
-      keys: ["leads.manage", "quotes.manage", "pricing.manage", "service_areas.manage", "content.manage"],
+      keys: [
+        "leads.manage",
+        "quotes.manage",
+        "pricing.manage",
+        "service_areas.manage",
+        "content.manage",
+        "marketing.manage",
+      ],
     },
     { role: "STAFF", keys: ["leads.manage", "quotes.manage"] },
-    { role: "MARKETING", keys: ["content.manage"] },
+    { role: "MARKETING", keys: ["content.manage", "marketing.manage"] },
   ];
   for (const { role, keys } of defaultRolePermissions) {
     for (const key of keys) {

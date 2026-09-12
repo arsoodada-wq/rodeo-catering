@@ -28,3 +28,39 @@ export const QUOTE_STATUS_TONES: Record<string, BadgeTone> = {
   DECLINED: "danger",
   EXPIRED: "danger",
 };
+
+export const SOCIAL_STATUS_LABELS: Record<string, string> = {
+  IDEA: "Idea",
+  DRAFT: "Draft",
+  APPROVED: "Approved",
+  SCHEDULED: "Scheduled",
+  PUBLISHED: "Published",
+};
+
+export const SOCIAL_STATUS_TONES: Record<string, BadgeTone> = {
+  IDEA: "neutral",
+  DRAFT: "info",
+  APPROVED: "warning",
+  SCHEDULED: "warning",
+  PUBLISHED: "success",
+};
+
+export const OUTREACH_STATUS_LABELS: Record<string, string> = {
+  PROSPECT: "Prospect",
+  CONTACTED: "Contacted",
+  RESPONDED: "Responded",
+  INTERESTED: "Interested",
+  LINK_ACQUIRED: "Link Acquired",
+  NOT_INTERESTED: "Not Interested",
+  FOLLOW_UP: "Follow-Up",
+};
+
+export const OUTREACH_STATUS_TONES: Record<string, BadgeTone> = {
+  PROSPECT: "neutral",
+  CONTACTED: "info",
+  RESPONDED: "warning",
+  INTERESTED: "warning",
+  LINK_ACQUIRED: "success",
+  NOT_INTERESTED: "danger",
+  FOLLOW_UP: "warning",
+};

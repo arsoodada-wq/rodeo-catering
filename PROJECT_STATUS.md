@@ -347,9 +347,54 @@ Tracking against the 12 implementation phases from the project brief.
   data (verified facts only — see `SEO_GUIDE.md`)
 - Not done: page editor, blog CMS, per-page SEO editing UI
 
-## Phase 9 — Marketing ⬜ not started
+## Phase 9 — Marketing ✅
 
-Social content calendar, outreach CRM UI (schema exists; no UI yet).
+- Done: a social content calendar at `/admin/social` on top of the existing
+  `SocialPost` schema (previously unused — the model existed since Phase 2
+  but had no UI). Plan a post per platform with category, hook, caption,
+  CTA, hashtags, a video concept and shot list (for TikTok/YouTube/Shorts),
+  a status (Idea → Draft → Approved → Scheduled → Published), and a target
+  date — sorted soonest-first. Explicitly scoped as a planning tool, not a
+  publisher: nothing here posts to any platform automatically, and the page
+  says so, since actually integrating with Meta/TikTok/YouTube's posting
+  APIs is a real project of its own the brief didn't ask for
+- Done: an outreach CRM at `/admin/outreach` on the existing
+  `OutreachContact`/`OutreachActivity` schema (same situation — modeled in
+  Phase 2, unused until now). Add a local partnership/backlink target
+  (venue, school, chamber, blogger, etc.), track its status (Prospect →
+  Contacted → Responded → Interested → Link Acquired / Not Interested), and
+  open its detail page to log every call/email/meeting as a dated activity
+  with notes, their response, and an optional follow-up date. Deleting a
+  contact cascades to its logged activities (enforced at the schema level,
+  `onDelete: Cascade`)
+- Both screens are gated behind a new `marketing.manage` permission (added
+  to the existing RBAC system from Phase 7, not a parallel one) — granted
+  by default to Manager and Marketing roles, editable like every other
+  permission at `/admin/permissions` with no code change. Every mutating
+  server action (create/update/delete post, create/update/delete contact,
+  add/delete activity) checks it before touching the database, same
+  discipline as every other admin action in this app
+- Extended the existing "status maps must stay in sync with the schema"
+  test pattern from Phase 11 to the two new enums (`SocialStatus`,
+  `OutreachStatus`) rather than just trusting the new label/tone maps by
+  eye — this is the same class of bug (Phase 7) that made the admin leads
+  list silently render an unstyled badge for a status nobody had mapped yet
+- Verified end-to-end against the real local database, not just code
+  review: logged in as Super Admin, confirmed "Social Calendar" and
+  "Outreach" appear in the sidebar (they didn't before this change),
+  created a real social post with hashtags and a scheduled date, edited
+  its status, confirmed the change survived a full page reload and matched
+  what a direct `psql` query showed, then deleted it and confirmed it was
+  gone from the database, not just the screen. Repeated the same
+  create → edit → verify-via-`psql` → delete → verify-gone loop for an
+  outreach contact, including logging a real activity against it and
+  confirming deleting the contact cascaded to delete the activity too. Ran
+  a full `next build` afterward and confirmed both new routes compile and
+  register correctly as dynamic (`ƒ /admin/social`, `ƒ /admin/outreach`,
+  `ƒ /admin/outreach/[id]`)
+- Not done: any actual publish integration with social platforms (out of
+  scope — see above), reminders/notifications for outreach follow-up dates,
+  bulk import of outreach contacts
 
 ## Phase 10 — Security / Performance audit 🟡 (audited, high/medium items fixed)
 
