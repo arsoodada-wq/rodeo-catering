@@ -15,6 +15,10 @@ import type { NextAuthConfig } from "next-auth";
  */
 export const authConfig = {
   pages: { signIn: "/admin/login" },
-  session: { strategy: "jwt" },
+  // Auth.js's default is 30 days, which is long for a session that can
+  // create other admin accounts and view customer contact info. A week is
+  // a reasonable default for how often the business's own staff sign in;
+  // not a business-confirmed policy, just a safer default than "unset".
+  session: { strategy: "jwt", maxAge: 7 * 24 * 60 * 60 },
   providers: [],
 } satisfies NextAuthConfig;

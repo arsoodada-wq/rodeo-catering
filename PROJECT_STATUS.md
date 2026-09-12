@@ -258,7 +258,108 @@ Tracking against the 12 implementation phases from the project brief.
 
 Social content calendar, outreach CRM UI (schema exists; no UI yet).
 
-## Phase 10 — Security / Performance audit ⬜ not started
+## Phase 10 — Security / Performance audit 🟡 (audited, high/medium items fixed)
+
+Ran a structured audit covering auth/brute-force, token entropy, IDOR,
+injection, security headers, secrets hygiene, dependency vulnerabilities,
+and cookie/session config. Findings and what was done about each:
+
+- **Fixed — no rate limiting on admin login.** The Credentials `authorize()`
+  callback (`src/lib/auth.ts`) had unlimited login attempts against
+  `bcrypt.compare`. Added a simple in-memory rate limiter
+  (`src/lib/rate-limit.ts`, unit tested) keyed by the submitted email — 10
+  attempts per 15 minutes, same generic "invalid credentials" response
+  either way so a lockout can't be distinguished from a wrong password by
+  someone probing for valid emails. Keyed by email rather than IP so a
+  distributed attempt against one account is still throttled. Caveat:
+  in-memory means each server process has independent counters — fine for
+  this app's actual single-server deployment shape, but would need a
+  shared store (e.g. Upstash Redis) if it ever moves to multi-instance
+  serverless
+- **Fixed — public lead form had no spam protection.** `submitCateringLead`
+  only validated shape, with nothing stopping a bot from flooding the
+  `Lead` table. Added: an invisible honeypot field in the wizard's contact
+  step (off-screen, `aria-hidden`, unreachable by Tab — a real visitor
+  never sees or can fill it); a minimum-fill-time check (rejects a
+  submission that arrives less than 3 seconds after the wizard mounted,
+  since no human fills an 8-step wizard that fast); and a per-IP rate
+  limit (5 submissions/hour, using the same `checkRateLimit` primitive).
+  Honeypot/timing failures return a fake success without touching the
+  database, so a bot never learns it was caught. Verified for real: a
+  normal browser walkthrough (which naturally takes >3s and never touches
+  the honeypot) still creates a real lead; unit tests cover the honeypot,
+  timing, and rate-limit paths directly
+- **Fixed — quote accept-link token was cuid, not built for unguessability.**
+  `Quote.secureToken` defaulted to `cuid()`, which embeds a timestamp and
+  counter for uniqueness rather than being a security token. Switched to
+  an explicit `crypto.randomBytes(32)` (256 bits) generated in
+  `createQuote` — no migration needed since the column was never a
+  database-level default. Verified a real quote's token in the database
+  after this change: 43 characters of base64url, as expected
+- **Fixed — `acceptQuote` never checked `expiresAt`.** The public quote page
+  already hides the Accept button once `expiresAt` has passed, but that's
+  a client-side check only — nothing stopped the server action itself
+  from accepting a quote past its expiration if called directly (nothing
+  auto-transitions a quote to `EXPIRED` when its date passes, so it could
+  sit in `SENT` status indefinitely). `acceptQuote` now checks `expiresAt`
+  itself, transitions the quote to `EXPIRED`, and rejects the accept.
+  Covered by a dedicated unit test with mocked Prisma/`next/cache`
+- **Fixed — no security headers.** `next.config.ts` had none configured.
+  Added `X-Frame-Options: DENY` (clickjacking protection — the admin
+  login page previously had none), `X-Content-Type-Options: nosniff`,
+  `Referrer-Policy: strict-origin-when-cross-origin`, a restrictive
+  `Permissions-Policy`, and `Strict-Transport-Security` (inert over plain
+  HTTP so harmless in local dev, takes effect once the real domain is
+  live over HTTPS). Verified via a real fetch against the running dev
+  server that all five headers are present on the response. Skipped a
+  full Content-Security-Policy for now — doing one properly means
+  cataloging every external resource this app loads first, and a rushed
+  CSP that's either too loose to matter or breaks a legitimate resource
+  is worse than none; flagged as a follow-up
+- **Fixed — session lifetime.** Auth.js's 30-day JWT default applied to
+  admin sessions with no override. Shortened to 7 days
+  (`src/lib/auth.config.ts`) — a safer default for a session that can view
+  customer contact info and create other admin accounts, not a
+  business-confirmed policy
+- **Fixed — `prisma` CLI misclassified as a runtime dependency** in
+  `package.json`. Moved to `devDependencies` (it's a build/codegen tool,
+  never imported by app code). Note: this does **not** fully resolve the 4
+  high-severity `npm audit` findings (`deepmerge-ts`, `mysql2`) — they're
+  pulled in transitively by `@prisma/client` itself (a genuine runtime
+  dependency) via `@prisma/config`, so they end up in `node_modules`
+  regardless of how `prisma` is classified. Confirmed neither vulnerable
+  package is ever imported/executed by this app's code (this project only
+  uses the Postgres adapter). `npm audit fix --force` "fixes" this by
+  downgrading to `prisma@6.19.3` — a major-version rollback away from the
+  no-Rust-engine driver-adapter architecture this project deliberately
+  adopted (see Phase 2) — so that was **not** applied. No patched stable
+  7.x release exists yet (7.10.0 is current; next release line is 8.0.0
+  release candidates, not stable). Accepted as a monitored, low-real-risk
+  finding until Prisma ships a real fix
+- **Reviewed, no gap found — action-level authorization.** Every mutating
+  server action in `src/app/actions/` calls `requirePermission()` (or the
+  hardcoded Super-Admin-only check for user/permission management) as its
+  first statement. `accept-quote.ts` is the sole intentional exception
+  (public, token-gated, documented inline). No admin action lets a
+  lower-privileged role reach data outside its granted permission
+- **Reviewed, no gap found — injection/XSS.** No `$queryRaw`/`$executeRaw`/
+  string-built SQL anywhere (Prisma throughout). One
+  `dangerouslySetInnerHTML` (`LocalBusinessSchema.tsx`), serializing only
+  hardcoded business constants — no user input reaches it
+- **Reviewed, no gap found — secrets hygiene.** `.env` correctly
+  gitignored and never committed; `.env.example` holds only placeholders;
+  no hardcoded API keys/secrets in tracked source
+- **Reviewed, no gap found — cookies.** No overrides in `auth.config.ts`/
+  `auth.ts`, so Auth.js v5's defaults apply (`httpOnly`, `sameSite: lax`,
+  `__Secure-` prefix once served over HTTPS) — acceptable for this app
+- **Reviewed, confirmed — `robots.txt`.** Still correctly disallows
+  `/admin`, `/api`, `/quote` (crawler hygiene only, not access control —
+  the real access control is `src/proxy.ts` plus the per-action
+  permission checks above)
+- Not done: a real load/performance pass (this app has no traffic yet to
+  profile), a proper CSP, migrating the in-memory rate limiter to a
+  shared store (only matters if/when this moves to multi-instance
+  serverless hosting)
 
 ## Phase 11 — Testing 🟡 (unit tests for the highest-risk logic; no e2e yet)
 

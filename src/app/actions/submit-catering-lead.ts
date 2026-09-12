@@ -1,7 +1,13 @@
 "use server";
 
 import { z } from "zod";
+import { headers } from "next/headers";
 import { db } from "@/lib/db";
+import { checkRateLimit } from "@/lib/rate-limit";
+
+const SUBMIT_LIMIT = 5;
+const SUBMIT_WINDOW_MS = 60 * 60 * 1000;
+const MIN_FILL_TIME_MS = 3000;
 
 const leadSchema = z.object({
   eventType: z.enum([
@@ -37,6 +43,9 @@ const leadSchema = z.object({
   phone: z.string().optional(),
   company: z.string().optional(),
   notes: z.string().optional(),
+  // Anti-spam signals, not real form fields — see CateringWizard.tsx.
+  website: z.string().optional(),
+  formStartedAtMs: z.number().optional(),
 });
 
 export type CateringLeadInput = z.infer<typeof leadSchema>;
@@ -56,6 +65,28 @@ export async function submitCateringLead(
 
   if (!data.email && !data.phone) {
     return { ok: false, error: "Please provide an email or phone number." };
+  }
+
+  // Bot signals: a filled honeypot field, or a submission faster than a
+  // human could plausibly click through an 8-step wizard. Pretend success
+  // without touching the database — telling a bot "rejected" just teaches
+  // it to iterate, where a real customer never sees this path at all.
+  const filledHoneypot = Boolean(data.website && data.website.trim() !== "");
+  const submittedTooFast =
+    data.formStartedAtMs !== undefined && Date.now() - data.formStartedAtMs < MIN_FILL_TIME_MS;
+  if (filledHoneypot || submittedTooFast) {
+    return { ok: true, leadId: "ignored" };
+  }
+
+  const hdrs = await headers();
+  const ip =
+    hdrs.get("x-forwarded-for")?.split(",")[0]?.trim() || hdrs.get("x-real-ip") || "unknown";
+  const { allowed } = checkRateLimit(`lead-submit:${ip}`, SUBMIT_LIMIT, SUBMIT_WINDOW_MS);
+  if (!allowed) {
+    return {
+      ok: false,
+      error: "Too many requests from this connection — please try again in a bit, or call us directly.",
+    };
   }
 
   // Defense in depth: the wizard's date picker already greys out dates

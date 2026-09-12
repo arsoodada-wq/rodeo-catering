@@ -425,7 +425,11 @@ model Quote {
   depositAmount Decimal?    @db.Decimal(10, 2)
   balanceAmount Decimal?    @db.Decimal(10, 2)
   termsText     String?
-  secureToken   String      @unique @default(cuid())
+  // No @default here deliberately — this token grants access to accept a
+  // quote with no login, so it's generated explicitly with crypto.randomBytes
+  // in createQuote (src/app/actions/create-quote.ts) rather than cuid(),
+  // which is designed for uniqueness, not unguessability.
+  secureToken   String      @unique
   expiresAt     DateTime?
   sentAt        DateTime?
   viewedAt      DateTime?

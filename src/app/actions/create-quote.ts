@@ -1,6 +1,7 @@
 "use server";
 
 import { z } from "zod";
+import { randomBytes } from "crypto";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { PERMISSIONS, requirePermission } from "@/lib/permissions";
@@ -53,6 +54,7 @@ export async function createQuote(input: CreateQuoteInput) {
       data: {
         quoteNumber,
         leadId,
+        secureToken: randomBytes(32).toString("base64url"),
         status: "SENT",
         subtotal,
         fees,

@@ -92,8 +92,13 @@ const initialState: FormState = {
 export function CateringWizard({ confirmedServiceAreas }: { confirmedServiceAreas: string[] }) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState<FormState>(initialState);
+  const [honeypot, setHoneypot] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
+  // Captured once, when the wizard first mounts — used server-side as a
+  // basic bot signal (a real person takes more than a couple seconds to
+  // click through eight steps; a script filling the form doesn't).
+  const [startedAt] = useState(() => Date.now());
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -141,6 +146,8 @@ export function CateringWizard({ confirmedServiceAreas }: { confirmedServiceArea
         phone: form.phone || undefined,
         company: form.company || undefined,
         notes: form.notes || undefined,
+        website: honeypot || undefined,
+        formStartedAtMs: startedAt,
       });
       setResult(
         res.ok
@@ -368,6 +375,22 @@ export function CateringWizard({ confirmedServiceAreas }: { confirmedServiceArea
 
         {step === 6 && (
           <StepShell title="How can we reach you?">
+            {/* Honeypot: invisible to a real visitor (off-screen, aria-hidden,
+                unreachable by Tab), but a form-filling bot that blindly
+                populates every input will trip it. Never shown or focusable
+                for actual users. */}
+            <div className="absolute left-[-9999px] top-auto h-0 w-0 overflow-hidden" aria-hidden="true">
+              <label htmlFor="website">Website</label>
+              <input
+                id="website"
+                name="website"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+              />
+            </div>
             <div className="grid gap-4 sm:grid-cols-2 max-w-lg">
               <Field label="Name" required>
                 <input value={form.name} onChange={(e) => update("name", e.target.value)} className="input" />
