@@ -57,6 +57,7 @@ const updateSchema = z.object({
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
   canonicalUrl: z.string().optional(),
+  ogImageId: z.string().nullable().optional(),
   noindex: z.boolean(),
   status: statusSchema,
 });
@@ -95,6 +96,7 @@ export async function updatePage(input: z.infer<typeof updateSchema>) {
         seoTitle: parsed.data.seoTitle || undefined,
         seoDescription: parsed.data.seoDescription || undefined,
         canonicalUrl: parsed.data.canonicalUrl || undefined,
+        ogImageId: parsed.data.ogImageId || null,
         noindex: parsed.data.noindex,
         status: parsed.data.status,
       },

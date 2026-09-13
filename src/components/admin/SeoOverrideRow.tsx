@@ -5,6 +5,7 @@ import { Check, Loader2, RotateCcw } from "lucide-react";
 import { updateSeoOverride } from "@/app/actions/update-seo-override";
 import { useToast } from "@/components/ui/ToastProvider";
 import { Badge } from "@/components/ui/Badge";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
   defaultDescription: string;
   overrideTitle?: string;
   overrideDescription?: string;
+  overrideOgImageId?: string;
 };
 
 export function SeoOverrideRow({
@@ -23,10 +25,14 @@ export function SeoOverrideRow({
   defaultDescription,
   overrideTitle,
   overrideDescription,
+  overrideOgImageId,
 }: Props) {
   const [title, setTitle] = useState(overrideTitle ?? "");
   const [description, setDescription] = useState(overrideDescription ?? "");
-  const [hasOverride, setHasOverride] = useState(Boolean(overrideTitle || overrideDescription));
+  const [ogImageId, setOgImageId] = useState<string | null>(overrideOgImageId ?? null);
+  const [hasOverride, setHasOverride] = useState(
+    Boolean(overrideTitle || overrideDescription || overrideOgImageId)
+  );
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,9 +42,9 @@ export function SeoOverrideRow({
     setError(null);
     setSaved(false);
     startTransition(async () => {
-      const res = await updateSeoOverride({ path, title, description });
+      const res = await updateSeoOverride({ path, title, description, ogImageId });
       if (res.ok) {
-        setHasOverride(Boolean(title.trim() || description.trim()));
+        setHasOverride(Boolean(title.trim() || description.trim() || ogImageId));
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       } else {
@@ -51,8 +57,9 @@ export function SeoOverrideRow({
   function resetToDefault() {
     setTitle("");
     setDescription("");
+    setOgImageId(null);
     startTransition(async () => {
-      const res = await updateSeoOverride({ path, title: "", description: "" });
+      const res = await updateSeoOverride({ path, title: "", description: "", ogImageId: null });
       if (res.ok) {
         setHasOverride(false);
         showToast("Reverted to the default.", "success");
@@ -95,6 +102,13 @@ export function SeoOverrideRow({
         rows={2}
         className="input mt-1 resize-none"
       />
+
+      <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-ink-400">
+        Social share image (og:image)
+      </label>
+      <div className="mt-1">
+        <MediaPicker selectedId={ogImageId} onSelect={setOgImageId} />
+      </div>
 
       <div className="mt-3 flex items-center justify-end gap-2">
         {hasOverride && (

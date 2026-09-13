@@ -63,6 +63,7 @@ export default async function AdminSeoPage() {
             defaultDescription={page.defaultDescription}
             overrideTitle={overrides[page.path]?.title}
             overrideDescription={overrides[page.path]?.description}
+            overrideOgImageId={overrides[page.path]?.ogImageId}
           />
         ))}
       </div>

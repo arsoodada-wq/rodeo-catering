@@ -150,7 +150,10 @@ way or (once built) by an existing Super Admin.
   (optional). Content is plain text (separate paragraphs with a blank
   line); there's an optional "search appearance" section to override the
   page title/description shown in Google, otherwise it falls back to the
-  post title and an excerpt of the content automatically
+  post title and an excerpt of the content automatically. That section
+  also has a "Social share image (og:image)" picker for what shows up
+  when the post is shared on Facebook/X — leave it blank and it uses the
+  featured image instead, so most posts only need to set one image
 - **Pages** (`/admin/pages`): build a standalone page — a seasonal
   promotion, an announcement, anything that doesn't fit the existing
   catering pages — out of simple content blocks: heading, paragraph,
@@ -160,13 +163,17 @@ way or (once built) by an existing Super Admin.
   `/spring-special`) — it's never visible on the public site until you
   set it to Published. If a title's URL would collide with an existing
   page on the site (like `/about` or `/catering`), saving is blocked with
-  an explanation rather than silently creating a page nobody can reach
+  an explanation rather than silently creating a page nobody can reach.
+  Also has its own "Social share image (og:image)" picker
 - **Page SEO** (`/admin/seo`): override the Google search title/description
   for any of the 15 static pages (homepage, the catering hub, About, and
   every event/menu landing page) without a code change — leave a field
   blank (or click "Reset to default") to fall back to that page's real
   default, shown as the field's placeholder so you can see what's live
-  before touching it. Changes apply immediately, no redeploy needed
+  before touching it. Also has a "Social share image (og:image)" picker
+  for each page — there's no default for this one (it's optional), so it
+  simply doesn't appear in a share preview until you set it. Changes apply
+  immediately, no redeploy needed
 - **Social Calendar** (`/admin/social`): plan and track social posts —
   platform, category, hook/caption/CTA, hashtags, a video concept and shot
   list for video-first platforms, status (Idea, Draft, Approved, Scheduled,

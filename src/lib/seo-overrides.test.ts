@@ -49,4 +49,23 @@ describe("resolvePageMetadata", () => {
   it("throws for a path that isn't a registered managed page", async () => {
     await expect(resolvePageMetadata("/not-a-real-page")).rejects.toThrow(/not a registered/);
   });
+
+  it("omits openGraph entirely when no og:image override is set", async () => {
+    findUnique.mockResolvedValue(null);
+    const result = await resolvePageMetadata("/catering");
+    expect(result.openGraph).toBeUndefined();
+  });
+
+  it("builds an absolute-resolvable og:image path when an override sets one", async () => {
+    findUnique.mockResolvedValue({
+      key: "seo:/catering",
+      value: { ogImageId: "media-123" },
+    });
+    const result = await resolvePageMetadata("/catering");
+    expect(result.openGraph).toEqual({
+      title: "Catering Near Worth, IL",
+      description: expect.stringMatching(/Request catering/),
+      images: [{ url: "/api/media/media-123/raw" }],
+    });
+  });
 });

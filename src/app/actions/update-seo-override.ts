@@ -10,6 +10,7 @@ const schema = z.object({
   path: z.string().min(1),
   title: z.string().optional(),
   description: z.string().optional(),
+  ogImageId: z.string().nullable().optional(),
 });
 
 export async function updateSeoOverride(input: z.infer<typeof schema>) {
@@ -28,10 +29,11 @@ export async function updateSeoOverride(input: z.infer<typeof schema>) {
   const key = `seo:${parsed.data.path}`;
   const title = parsed.data.title?.trim() || undefined;
   const description = parsed.data.description?.trim() || undefined;
+  const ogImageId = parsed.data.ogImageId || undefined;
 
   try {
-    if (!title && !description) {
-      // Both fields cleared — remove the override entirely rather than
+    if (!title && !description && !ogImageId) {
+      // Everything cleared — remove the override entirely rather than
       // storing an empty one, so the page falls back to its real default.
       await db.siteSetting.deleteMany({ where: { key } });
     } else {
@@ -39,10 +41,10 @@ export async function updateSeoOverride(input: z.infer<typeof schema>) {
         where: { key },
         create: {
           key,
-          value: { title, description },
+          value: { title, description, ogImageId },
           description: `SEO title/description override for ${parsed.data.path}`,
         },
-        update: { value: { title, description } },
+        update: { value: { title, description, ogImageId } },
       });
     }
     revalidatePath(parsed.data.path);

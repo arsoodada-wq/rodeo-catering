@@ -62,6 +62,7 @@ export default async function AdminPageDetailPage({ params }: { params: Promise<
           seoTitle={data.page.seoTitle}
           seoDescription={data.page.seoDescription}
           canonicalUrl={data.page.canonicalUrl}
+          ogImageId={data.page.ogImageId}
           noindex={data.page.noindex}
           status={data.page.status}
         />

@@ -565,7 +565,7 @@ Tracking against the 12 implementation phases from the project brief.
   registers as dynamic with no route conflicts against any existing
   static page — the exact risk this whole design had to rule out
 
-## Phase 8 — CMS / SEO 🟡 (SEO fundamentals, blog CMS, per-page SEO editing, page builder done)
+## Phase 8 — CMS / SEO ✅
 
 - Done: `sitemap.xml`, `robots.txt`, `CateringBusiness` JSON-LD structured
   data (verified facts only — see `SEO_GUIDE.md`)
@@ -669,12 +669,54 @@ Tracking against the 12 implementation phases from the project brief.
   Phase 7, since a media library needed to exist first for its image
   block to be more than a placeholder, and it made more sense to build
   both together than to ship half of it
-- Not done: actual `og:image` meta tags anywhere (homepage, blog posts,
-  or the new standalone pages) — a media library now exists (Phase 7),
-  and `BlogPost`/`Page` both already have an `ogImageId` column, but
-  nothing yet reads it into `generateMetadata`'s `openGraph.images`.
-  Small, contained follow-up now that the missing piece (an image to
-  point at) exists, not started this pass
+- Done: `og:image` meta tags (2026-09-13) — the last open item in this
+  phase, unblocked now that the media library exists. `BlogPost.ogImageId`
+  and `Page.ogImageId` (present in the schema since Phase 2, unused until
+  now) were bare `String?` columns with no actual FK — converted both to
+  real `Media?` relations (named relations, since `BlogPost` now points at
+  `Media` twice — `featuredImage` and `ogImage` — and `Media` needed
+  matching named back-relations to disambiguate); a Prisma migration
+  applied this cleanly with no data loss since the columns already
+  existed. The 15 static SEO-managed pages (`/admin/seo`) got the same
+  capability without a schema change at all — `ogImageId` just joins the
+  existing `title`/`description` override already stored as JSON in
+  `SiteSetting`
+- The real obstacle wasn't the missing UI, it was that `Media.url` stores
+  an uploaded image as a `data:` base64 URI (the Phase 7 design choice to
+  avoid an object-storage vendor decision) — perfectly fine for an
+  `<img src>` embedded directly in server-rendered HTML, but a
+  `<meta property="og:image">` tag needs a real fetchable URL, since a
+  social platform's crawler fetches it independently and doesn't accept a
+  `data:` URI there. Added `/api/media/[id]/raw` — deliberately public and
+  unauthenticated (unlike the existing admin-only `/api/media/[id]`),
+  since a Facebook/X crawler has no admin session to send and every image
+  in the library was uploaded for eventual public use anyway — which
+  decodes the stored `data:` URI back into real bytes with the correct
+  `Content-Type` and a long `immutable` cache header. `src/lib/og-image.ts`
+  (`ogImagePath()`) is the one place that turns a Media id into that
+  route's path, resolved to an absolute URL by the root layout's existing
+  `metadataBase`. A blog post with no explicit `ogImageId` falls back to
+  its `featuredImageId` before omitting the tag entirely — one fewer field
+  an author has to fill in for the common case of "use the same photo for
+  both." Next.js also auto-derives a `twitter:image`/`twitter:card` tag
+  from the same `openGraph.images` array with no extra code
+- Added 2 unit tests to `seo-overrides.test.ts` (no `openGraph` key when no
+  image override is set; the exact resolved path when one is). Verified
+  end-to-end against a real production build (`next build && next start`,
+  not dev mode, since a crawler-facing tag is exactly the kind of thing
+  that should be checked for real): uploaded a real test image through the
+  actual upload form, set it as a real test blog post's `og:image`
+  (deliberately leaving its featured image unset first) and confirmed via
+  a raw `curl` of the live HTML that `<meta property="og:image">` (and the
+  auto-derived `twitter:image`) pointed at `/api/media/<id>/raw`; confirmed
+  that URL actually 200s with `Content-Type: image/png` and real,
+  byte-valid PNG data (not just a 200); removed the override and confirmed
+  the tag correctly fell back to the featured image's id instead; set a
+  real (temporary) `og:image` override on the live `/corporate-catering`
+  page through `/admin/seo` and confirmed it rendered there too; confirmed
+  a nonexistent media id 404s cleanly rather than serving broken image
+  data. Cleaned up the test post, test image, and the temporary SEO
+  override immediately after
 
 ## Phase 9 — Marketing ✅
 

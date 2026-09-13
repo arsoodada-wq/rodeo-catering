@@ -7,6 +7,7 @@ import { updatePage, deletePage } from "@/app/actions/pages";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/ToastProvider";
 import { PageBlockEditor } from "@/components/admin/PageBlockEditor";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import type { PageBlock } from "@/lib/page-blocks";
 import { cn } from "@/lib/cn";
 
@@ -19,6 +20,7 @@ type Props = {
   seoTitle: string | null;
   seoDescription: string | null;
   canonicalUrl: string | null;
+  ogImageId: string | null;
   noindex: boolean;
   status: string;
 };
@@ -31,6 +33,7 @@ export function PageEditor(page: Props) {
   const [seoTitle, setSeoTitle] = useState(page.seoTitle ?? "");
   const [seoDescription, setSeoDescription] = useState(page.seoDescription ?? "");
   const [canonicalUrl, setCanonicalUrl] = useState(page.canonicalUrl ?? "");
+  const [ogImageId, setOgImageId] = useState<string | null>(page.ogImageId);
   const [noindex, setNoindex] = useState(page.noindex);
   const [status, setStatus] = useState(page.status);
 
@@ -54,6 +57,7 @@ export function PageEditor(page: Props) {
         seoTitle,
         seoDescription,
         canonicalUrl,
+        ogImageId,
         noindex,
         status: status as "DRAFT" | "PUBLISHED",
       });
@@ -163,6 +167,16 @@ export function PageEditor(page: Props) {
           <input type="checkbox" checked={noindex} onChange={(e) => setNoindex(e.target.checked)} />
           Hide from search engines (noindex)
         </label>
+
+        <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-ink-400">
+          Social share image (og:image)
+        </label>
+        <p className="mt-0.5 text-xs text-ink-400">
+          Shown when this page is shared on Facebook, X, or other social platforms.
+        </p>
+        <div className="mt-1">
+          <MediaPicker selectedId={ogImageId} onSelect={setOgImageId} />
+        </div>
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">

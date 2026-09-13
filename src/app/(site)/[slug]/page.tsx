@@ -5,6 +5,7 @@ import { db } from "@/lib/db";
 import { getPublishedPageBySlug } from "@/lib/public-data";
 import { parsePageContent } from "@/lib/page-blocks";
 import { PageBlocks } from "@/components/site/PageBlocks";
+import { ogImagePath } from "@/lib/og-image";
 
 /**
  * Catch-all for standalone Pages built at /admin/pages. Every existing
@@ -24,11 +25,16 @@ export async function generateMetadata({
   const page = await getPublishedPageBySlug(slug);
   if (!page) return { title: "Page Not Found", robots: { index: false, follow: false } };
 
+  const title = page.seoTitle || page.title;
+  const description = page.seoDescription || undefined;
+  const ogImage = ogImagePath(page.ogImageId);
+
   return {
-    title: page.seoTitle || page.title,
-    description: page.seoDescription || undefined,
+    title,
+    description,
     alternates: page.canonicalUrl ? { canonical: page.canonicalUrl } : undefined,
     robots: page.noindex ? { index: false, follow: false } : undefined,
+    openGraph: ogImage ? { title, description, type: "website", images: [{ url: ogImage }] } : undefined,
   };
 }
 

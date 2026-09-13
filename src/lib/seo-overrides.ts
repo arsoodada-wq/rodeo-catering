@@ -1,7 +1,8 @@
 import { db } from "@/lib/db";
 import { SEO_MANAGED_PAGES } from "@/lib/seo-pages";
+import { ogImagePath } from "@/lib/og-image";
 
-export type SeoOverride = { title?: string; description?: string };
+export type SeoOverride = { title?: string; description?: string; ogImageId?: string };
 
 function settingKey(path: string) {
   return `seo:${path}`;
@@ -12,7 +13,11 @@ export async function getSeoOverride(path: string): Promise<SeoOverride | null> 
     const setting = await db.siteSetting.findUnique({ where: { key: settingKey(path) } });
     if (!setting) return null;
     const value = setting.value as SeoOverride;
-    return { title: value.title || undefined, description: value.description || undefined };
+    return {
+      title: value.title || undefined,
+      description: value.description || undefined,
+      ogImageId: value.ogImageId || undefined,
+    };
   } catch {
     return null;
   }
@@ -37,9 +42,14 @@ export async function resolvePageMetadata(path: string, useAbsoluteTitle = false
   const override = await getSeoOverride(path);
   const title = override?.title || page.defaultTitle;
   const description = override?.description || page.defaultDescription;
+  const ogImage = ogImagePath(override?.ogImageId);
 
   return {
     title: useAbsoluteTitle ? { absolute: title } : title,
     description,
+    // openGraph.title is plain text with no title-template involved (unlike
+    // the root `title` field above), so it's safe to always set it here
+    // regardless of useAbsoluteTitle.
+    openGraph: ogImage ? { title, description, images: [{ url: ogImage }] } : undefined,
   };
 }

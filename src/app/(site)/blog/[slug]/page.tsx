@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { getPublishedBlogPostBySlug } from "@/lib/public-data";
 import { formatEventDate, excerpt } from "@/lib/format";
 import { business } from "@/lib/site-content";
+import { ogImagePath } from "@/lib/og-image";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
@@ -21,11 +22,15 @@ export async function generateMetadata({
 
   const title = post.seoTitle || post.title;
   const description = post.seoDescription || excerpt(post.content, 160);
+  const ogImage = ogImagePath(post.ogImageId ?? post.featuredImageId);
 
   return {
     title,
     description,
     alternates: post.canonicalUrl ? { canonical: post.canonicalUrl } : undefined,
+    openGraph: ogImage
+      ? { title, description, type: "article", images: [{ url: ogImage }] }
+      : undefined,
   };
 }
 

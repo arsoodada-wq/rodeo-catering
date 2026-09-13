@@ -599,7 +599,7 @@ model BlogPost {
   authorId        String?
   author          User?         @relation(fields: [authorId], references: [id])
   featuredImageId String?
-  featuredImage   Media?        @relation(fields: [featuredImageId], references: [id])
+  featuredImage   Media?        @relation("BlogPostFeaturedImage", fields: [featuredImageId], references: [id])
   content         String        @db.Text
   category        String?
   tags            String[]      @default([])
@@ -607,6 +607,7 @@ model BlogPost {
   seoDescription  String?
   canonicalUrl    String?
   ogImageId       String?
+  ogImage         Media?        @relation("BlogPostOgImage", fields: [ogImageId], references: [id])
   status          ContentStatus @default(DRAFT)
   publishedAt     DateTime?
   createdAt       DateTime      @default(now())
@@ -626,6 +627,7 @@ model Page {
   seoDescription String?
   canonicalUrl   String?
   ogImageId      String?
+  ogImage        Media?        @relation("PageOgImage", fields: [ogImageId], references: [id])
   noindex        Boolean       @default(false)
   status         ContentStatus @default(DRAFT)
   createdAt      DateTime      @default(now())
@@ -646,10 +648,12 @@ model Media {
   sizeBytes  Int?
   uploadedAt DateTime @default(now())
 
-  menuItems MenuItem[]
-  packages  Package[]
-  awards    AwardRecognition[]
-  blogPosts BlogPost[]
+  menuItems           MenuItem[]
+  packages            Package[]
+  awards              AwardRecognition[]
+  blogPosts           BlogPost[] @relation("BlogPostFeaturedImage")
+  blogPostsOgImage    BlogPost[] @relation("BlogPostOgImage")
+  pagesOgImage        Page[]     @relation("PageOgImage")
 
   @@map("media")
 }

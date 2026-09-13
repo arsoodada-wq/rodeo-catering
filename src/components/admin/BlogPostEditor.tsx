@@ -17,6 +17,7 @@ type Props = {
   tags: string[];
   content: string;
   featuredImageId: string | null;
+  ogImageId: string | null;
   seoTitle: string | null;
   seoDescription: string | null;
   canonicalUrl: string | null;
@@ -31,6 +32,7 @@ export function BlogPostEditor(post: Props) {
   const [tags, setTags] = useState(post.tags.join(", "));
   const [content, setContent] = useState(post.content);
   const [featuredImageId, setFeaturedImageId] = useState<string | null>(post.featuredImageId);
+  const [ogImageId, setOgImageId] = useState<string | null>(post.ogImageId);
   const [seoTitle, setSeoTitle] = useState(post.seoTitle ?? "");
   const [seoDescription, setSeoDescription] = useState(post.seoDescription ?? "");
   const [canonicalUrl, setCanonicalUrl] = useState(post.canonicalUrl ?? "");
@@ -55,6 +57,7 @@ export function BlogPostEditor(post: Props) {
         tags,
         content,
         featuredImageId,
+        ogImageId,
         seoTitle,
         seoDescription,
         canonicalUrl,
@@ -190,6 +193,17 @@ export function BlogPostEditor(post: Props) {
           placeholder="Falls back to an excerpt of the content if left blank."
           className="input mt-1 resize-none"
         />
+
+        <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-ink-400">
+          Social share image (og:image)
+        </label>
+        <p className="mt-0.5 text-xs text-ink-400">
+          Shown when this post is shared on Facebook, X, or other social platforms. Falls back to
+          the featured image above if left blank.
+        </p>
+        <div className="mt-1">
+          <MediaPicker selectedId={ogImageId} onSelect={setOgImageId} />
+        </div>
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
