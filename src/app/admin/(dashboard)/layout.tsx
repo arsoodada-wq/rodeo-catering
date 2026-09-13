@@ -18,6 +18,7 @@ import {
   KeyRound,
   Search,
   ImageIcon,
+  FileStack,
 } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
 import { PERMISSIONS, roleHasPermission, type PermissionKey } from "@/lib/permissions";
@@ -34,6 +35,7 @@ const navLinks: { href: string; label: string; icon: typeof LayoutDashboard; per
   { href: "/admin/awards", label: "Awards", icon: Trophy, permission: PERMISSIONS.CONTENT_MANAGE },
   { href: "/admin/blog", label: "Blog", icon: Newspaper, permission: PERMISSIONS.CONTENT_MANAGE },
   { href: "/admin/media", label: "Media Library", icon: ImageIcon, permission: PERMISSIONS.CONTENT_MANAGE },
+  { href: "/admin/pages", label: "Pages", icon: FileStack, permission: PERMISSIONS.CONTENT_MANAGE },
   { href: "/admin/seo", label: "Page SEO", icon: Search, permission: PERMISSIONS.CONTENT_MANAGE },
   { href: "/admin/social", label: "Social Calendar", icon: CalendarDays, permission: PERMISSIONS.MARKETING_MANAGE },
   { href: "/admin/outreach", label: "Outreach", icon: Handshake, permission: PERMISSIONS.MARKETING_MANAGE },

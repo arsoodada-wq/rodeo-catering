@@ -73,3 +73,13 @@ export async function getPublishedBlogPostBySlug(slug: string) {
     return null;
   }
 }
+
+export async function getPublishedPageBySlug(slug: string) {
+  try {
+    const page = await db.page.findUnique({ where: { slug } });
+    if (!page || page.status !== "PUBLISHED") return null;
+    return page;
+  } catch {
+    return null;
+  }
+}

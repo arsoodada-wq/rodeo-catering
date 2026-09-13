@@ -327,7 +327,7 @@ Tracking against the 12 implementation phases from the project brief.
   data via `psql` immediately after and confirmed clean. Ran a full
   `next build` and confirmed the route registers correctly
 
-## Phase 7 — Admin Dashboard 🟡 (auth + pricing screens)
+## Phase 7 — Admin Dashboard ✅
 
 - Done: Auth.js v5 credentials login (`/admin/login`), JWT sessions, first
   admin bootstrapped via `ADMIN_EMAIL`/`ADMIN_PASSWORD` in `prisma/seed.ts`.
@@ -512,14 +512,60 @@ Tracking against the 12 implementation phases from the project brief.
   rendered cleanly with no broken image. Deleted the test post and image
   afterward. Ran a full `next build` and confirmed
   `/admin/media`/`/api/media`/`/api/media/[id]` all register correctly
-- Not done: a generic block-based editor for the `Page` model (outreach
-  and social already got their own admin screens in Phases 8/9 — this is
-  the one remaining content type with no UI at all). Note: the "Where are
-  you located" FAQ answer is free text (admin-owned, not templated), so
-  it will drift from the real service-area list unless manually updated —
-  the Service Areas admin page reminds admins of this
+- Done: a generic page builder for the `Page` model (2026-09-12) — the
+  last content type in the schema with no admin UI at all. There's no
+  business specification for what a "page builder" should look like, and
+  guessing at a full drag-and-drop visual canvas risked building something
+  bigger and less certain to actually match what's needed than the
+  problem calls for. Scoped it down to what the `Page` model's own
+  `content Json` field implies — an ordered list of a small fixed set of
+  block types (heading, paragraph, image, button) — rather than inventing
+  a bigger editor speculatively. `/admin/pages` lists pages and creates a
+  new one (auto-slugged, starts as a draft, same create-then-redirect
+  flow as Blog and Outreach); `/admin/pages/[id]` edits title, slug, an
+  optional H1, the block list (add/reorder/delete, each block's fields
+  edited inline — images pick from the Phase 7 Media Library via the same
+  `MediaPicker`), the same SEO title/description/canonical override
+  pattern Blog already uses, and a noindex toggle. A page stays invisible
+  until explicitly Published, same discipline as Blog
+- Public pages render at the site root (`/<slug>`, e.g.
+  `/spring-catering-promotion`) via a `[slug]` catch-all
+  (`src/app/(site)/[slug]/page.tsx`) rather than under a `/pages/` prefix
+  — cleaner URLs, and safe because Next.js always prefers a literal
+  route (`/about`, `/catering`, ...) over the dynamic catch-all at the
+  same level. To close the one real risk that setup creates — a page
+  slug that happens to match an existing static route would silently
+  become unreachable — `createPage`/`updatePage` both refuse any slug in
+  a new `RESERVED_PAGE_SLUGS` list (`src/lib/page-blocks.ts`) covering
+  every existing top-level route, kept in sync by hand and documented as
+  such. Published pages feed into `sitemap.xml`, skipping any marked
+  noindex
+- `parsePageContent()` deliberately drops an individual malformed block
+  rather than failing the whole page render — content only reaches the
+  database through `updatePage`'s own Zod validation, so a bad entry
+  there would mean manual database editing or a future schema change, not
+  normal operation, and a public page should degrade, not 500, if that
+  ever happens
+- Added 9 unit tests (`page-blocks.test.ts`) covering the block schema's
+  acceptance/rejection cases, the malformed-block-dropping behavior, and
+  the reserved-slugs list
+- Verified end-to-end against the real database and a real running
+  server: created a real page through the actual admin UI, added a
+  heading, paragraph, and button block through the real block editor
+  (reorder/delete controls included), published it, confirmed the exact
+  structured JSON saved via a direct `psql` query, confirmed the live
+  page rendered all three blocks in order with the header/footer intact
+  and the correct (non-doubled) browser title, confirmed it appeared in
+  `sitemap.xml`. Confirmed the reserved-slug guard for real: tried to
+  rename the test page's slug to `about` through the actual form and got
+  the exact rejection message back, then confirmed the real `/about`
+  page was completely unaffected. Deleted the test page and confirmed
+  its now-freed slug correctly 404s again (the proper branded 404, not
+  a stale render). Ran a full `next build` and confirmed `/[slug]`
+  registers as dynamic with no route conflicts against any existing
+  static page — the exact risk this whole design had to rule out
 
-## Phase 8 — CMS / SEO 🟡 (SEO fundamentals, blog CMS, per-page SEO editing done)
+## Phase 8 — CMS / SEO 🟡 (SEO fundamentals, blog CMS, per-page SEO editing, page builder done)
 
 - Done: `sitemap.xml`, `robots.txt`, `CateringBusiness` JSON-LD structured
   data (verified facts only — see `SEO_GUIDE.md`)
@@ -619,11 +665,16 @@ Tracking against the 12 implementation phases from the project brief.
   confirmed every converted page still prerenders as static despite now
   reading from the database for its metadata, same as the homepage's
   existing FAQ/review sections already did
-- Not done: a generic block-based page editor for the `Page` model (its
-  `content Json` field implies a real page-builder UI — a materially
-  bigger, less-specified undertaking than the blog CMS or this SEO
-  override system, deliberately left for a dedicated pass), OG image
-  overrides (no media upload/picker UI exists yet for any model)
+- Done: the generic page editor mentioned as "not done" above — see
+  Phase 7, since a media library needed to exist first for its image
+  block to be more than a placeholder, and it made more sense to build
+  both together than to ship half of it
+- Not done: actual `og:image` meta tags anywhere (homepage, blog posts,
+  or the new standalone pages) — a media library now exists (Phase 7),
+  and `BlogPost`/`Page` both already have an `ogImageId` column, but
+  nothing yet reads it into `generateMetadata`'s `openGraph.images`.
+  Small, contained follow-up now that the missing piece (an image to
+  point at) exists, not started this pass
 
 ## Phase 9 — Marketing ✅
 

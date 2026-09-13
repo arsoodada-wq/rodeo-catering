@@ -151,6 +151,16 @@ way or (once built) by an existing Super Admin.
   line); there's an optional "search appearance" section to override the
   page title/description shown in Google, otherwise it falls back to the
   post title and an excerpt of the content automatically
+- **Pages** (`/admin/pages`): build a standalone page — a seasonal
+  promotion, an announcement, anything that doesn't fit the existing
+  catering pages — out of simple content blocks: heading, paragraph,
+  image (from the Media Library), and button. Add blocks, reorder them
+  with the up/down arrows, edit each one inline. A new page starts as a
+  draft at an auto-generated URL (e.g. "Spring Special" →
+  `/spring-special`) — it's never visible on the public site until you
+  set it to Published. If a title's URL would collide with an existing
+  page on the site (like `/about` or `/catering`), saving is blocked with
+  an explanation rather than silently creating a page nobody can reach
 - **Page SEO** (`/admin/seo`): override the Google search title/description
   for any of the 15 static pages (homepage, the catering hub, About, and
   every event/menu landing page) without a code change — leave a field
@@ -183,8 +193,6 @@ way or (once built) by an existing Super Admin.
 - Delivery fees (a `DeliveryFee` model exists per service area; no editor yet)
 - Orders (post-acceptance fulfillment tracking, distinct from the quote
   itself)
-- A generic editor for building/editing standalone landing pages (the
-  `Page` model)
 
 ## In the meantime
 
