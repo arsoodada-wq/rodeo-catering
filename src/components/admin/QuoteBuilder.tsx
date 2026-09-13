@@ -163,6 +163,7 @@ export function QuoteBuilder({
                 value={item.description}
                 onChange={(e) => updateItem(i, { description: e.target.value })}
                 placeholder="e.g. Smash Burger Package"
+                aria-label="Description"
                 className="input mt-1"
               />
             </div>
@@ -177,6 +178,7 @@ export function QuoteBuilder({
                 min={1}
                 value={item.quantity}
                 onChange={(e) => updateItem(i, { quantity: Number(e.target.value) || 1 })}
+                aria-label="Qty"
                 className="input mt-1"
               />
             </div>
@@ -192,12 +194,14 @@ export function QuoteBuilder({
                 step="0.01"
                 value={item.unitPrice}
                 onChange={(e) => updateItem(i, { unitPrice: Number(e.target.value) || 0 })}
+                aria-label="Unit Price"
                 className="input mt-1"
               />
             </div>
             <button
               onClick={() => removeItem(i)}
               disabled={items.length === 1}
+              aria-label="Remove line item"
               className="mb-0.5 flex h-9 w-9 items-center justify-center rounded-lg text-ink-400 hover:text-rodeo-600 disabled:opacity-30"
             >
               <Trash2 className="h-4 w-4" />
