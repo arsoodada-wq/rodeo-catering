@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { GraduationCap, Users, Clock, HandPlatter } from "lucide-react";
 import { EventLandingTemplate } from "@/components/catering/EventLandingTemplate";
+import { resolvePageMetadata } from "@/lib/seo-overrides";
 
-export const metadata: Metadata = {
-  title: "Graduation Party Catering in Worth, IL",
-  description:
-    "Graduation party catering from Rodeo Burgers and Chicken — feed an open house or grad party in Worth, IL with fresh smash burgers and chicken.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageMetadata("/graduation-catering");
+}
 
 export default function GraduationCateringPage() {
   return (

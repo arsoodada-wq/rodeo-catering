@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { business, award } from "@/lib/site-content";
+import { resolvePageMetadata } from "@/lib/seo-overrides";
 
-export const metadata: Metadata = {
-  title: "About",
-  description: "About Rodeo Burgers and Chicken Catering, based in Worth, IL.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageMetadata("/about");
+}
 
 export default function AboutPage() {
   return (

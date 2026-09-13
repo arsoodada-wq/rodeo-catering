@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { Users, Flame, HandPlatter, Clock } from "lucide-react";
 import { EventLandingTemplate } from "@/components/catering/EventLandingTemplate";
+import { resolvePageMetadata } from "@/lib/seo-overrides";
 
-export const metadata: Metadata = {
-  title: "Large Group Catering in Worth, IL",
-  description:
-    "Large group catering from Rodeo Burgers and Chicken — full-scale event catering for 200+ guests in Worth, IL and nearby suburbs.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageMetadata("/large-group-catering");
+}
 
 export default function LargeGroupCateringPage() {
   return (

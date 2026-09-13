@@ -4,12 +4,11 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { getPublishedBlogPosts } from "@/lib/public-data";
 import { excerpt } from "@/lib/format";
+import { resolvePageMetadata } from "@/lib/seo-overrides";
 
-export const metadata: Metadata = {
-  title: "Catering Guides | Worth, IL",
-  description:
-    "Planning guides for corporate lunches, birthdays, graduations, weddings, and other events from Rodeo Burgers and Chicken Catering in Worth, IL.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageMetadata("/blog");
+}
 
 export default async function BlogPage() {
   const posts = await getPublishedBlogPosts();

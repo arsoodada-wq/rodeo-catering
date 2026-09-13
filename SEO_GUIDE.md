@@ -1,10 +1,10 @@
 # SEO Guide
 
-_Partial — the blog has its own SEO title/description/canonical overrides
-(Phase 8, 2026-09-12), but there's still no per-page SEO editing UI for the
-static marketing pages (homepage, catering, event/location pages) or a
-generic page-builder for the `Page` model. The code-level conventions below
-are in place and should be followed as more pages are built._
+_Partial — the blog has its own SEO title/description/canonical overrides,
+and the 15 static marketing pages now have admin-editable title/description
+overrides too (`/admin/seo`, Phase 8, 2026-09-12). Still no generic
+page-builder for the `Page` model. The code-level conventions below are in
+place and should be followed as more pages are built._
 
 ## Targeting local ("near me") search
 
@@ -21,7 +21,10 @@ ranking, in rough order of impact:
 2. **The page `<title>` tag** — every public page's title now includes
    "Worth, IL" (fixed 2026-09-12; previously only the homepage did — see
    `git log` for the commit). Every new page should follow this pattern:
-   `"<Service> in <City>, IL"` or `"<Service> Near <City>, IL"`
+   `"<Service> in <City>, IL"` or `"<Service> Near <City>, IL"`. An admin
+   can now tune any static page's exact title/description without a
+   redeploy at `/admin/seo`, in case a specific keyword phrasing turns out
+   to perform better once there's real Search Console data to look at
 3. **`CateringBusiness` JSON-LD** (`LocalBusinessSchema.tsx`) — address,
    phone, `areaServed`. As of 2026-09-12 this is dynamic (reads active
    `ServiceArea` rows) and includes a `GeoCircle` for the confirmed
@@ -66,6 +69,21 @@ ranking, in rough order of impact:
   once for every page. Also emits `BlogPosting` JSON-LD alongside the
   `CateringBusiness` schema already on every page. A draft, deleted, or
   nonexistent slug 404s rather than rendering, same as location pages
+- `src/lib/seo-pages.ts` + `src/lib/seo-overrides.ts` — every static
+  marketing page (homepage, `/catering`, `/about`, all 11 event/menu
+  pages, `/blog`) calls `resolvePageMetadata(path)` from
+  `generateMetadata` instead of exporting static `metadata`, so an
+  `/admin/seo` override (stored in `SiteSetting` as `seo:<path>`) takes
+  effect immediately. `seo-pages.ts` holds each page's real default
+  title/description — the admin screen's placeholder text and the live
+  fallback both read the same registry, so they can't drift. The
+  homepage is the one page that must pass `resolvePageMetadata(path,
+  true)` — `true` wraps its title as `{ absolute }` so Next.js's title
+  template (which every other page's plain-string title still gets)
+  doesn't double up the brand name on the one title that already *is*
+  the full branded string. Adding a new static page to the sitemap?
+  Register it in `seo-pages.ts` and call `resolvePageMetadata` from its
+  `generateMetadata` rather than a fresh static `metadata` export
 - `src/app/robots.ts` — allows everything except `/admin` and `/api`,
   points to the sitemap
 - `src/components/seo/LocalBusinessSchema.tsx` — `CateringBusiness`
@@ -100,9 +118,6 @@ ranking, in rough order of impact:
 
 ## Still to build
 
-- Per-page SEO editing UI for the static marketing pages (homepage,
-  catering, event/location pages) — their titles/descriptions are still
-  hardcoded in each page file, not database-editable like blog posts now are
 - A generic block-based editor for the `Page` model, and `ogImageId`
   support for both `Page` and `BlogPost` (needs a media upload/picker UI
   first)

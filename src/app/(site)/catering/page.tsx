@@ -5,12 +5,11 @@ import { PackagesTeaser } from "@/components/catering/PackagesTeaser";
 import { ServiceAreaAndFaq } from "@/components/home/ServiceAreaAndFaq";
 import { business } from "@/lib/site-content";
 import { getConfirmedServiceAreas } from "@/lib/public-data";
+import { resolvePageMetadata } from "@/lib/seo-overrides";
 
-export const metadata: Metadata = {
-  title: "Catering Near Worth, IL",
-  description:
-    "Request catering from Rodeo Burgers and Chicken for your corporate event, birthday, graduation, wedding, or gathering in Worth, IL.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageMetadata("/catering");
+}
 
 export default async function CateringPage() {
   const confirmedServiceAreas = await getConfirmedServiceAreas();

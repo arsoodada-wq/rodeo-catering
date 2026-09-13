@@ -3,12 +3,11 @@ import { Flame, Eye, Users, PartyPopper } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { business } from "@/lib/site-content";
+import { resolvePageMetadata } from "@/lib/seo-overrides";
 
-export const metadata: Metadata = {
-  title: "Live Cookout Catering in Worth, IL",
-  description:
-    "Live cookout catering from Rodeo Burgers and Chicken in Worth, IL — our team cooks fresh, on-site, turning your event into a food experience.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageMetadata("/live-cookout-catering");
+}
 
 const highlights = [
   {

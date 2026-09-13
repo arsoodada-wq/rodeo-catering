@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { Flame, Beef, Sparkles, HandPlatter } from "lucide-react";
 import { EventLandingTemplate } from "@/components/catering/EventLandingTemplate";
+import { resolvePageMetadata } from "@/lib/seo-overrides";
 
-export const metadata: Metadata = {
-  title: "Smash Burger Catering in Worth, IL",
-  description:
-    "Smash burger catering from Rodeo Burgers and Chicken — our signature smash technique, catered for any event in Worth, IL and nearby suburbs.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageMetadata("/burger-catering");
+}
 
 export default function BurgerCateringPage() {
   return (

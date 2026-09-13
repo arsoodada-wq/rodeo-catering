@@ -3,12 +3,11 @@ import { Briefcase, Repeat, Users, Clock } from "lucide-react";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { business } from "@/lib/site-content";
+import { resolvePageMetadata } from "@/lib/seo-overrides";
 
-export const metadata: Metadata = {
-  title: "Corporate Catering in Worth, IL",
-  description:
-    "Corporate catering from Rodeo Burgers and Chicken — office lunches, meetings, employee appreciation, and company events in Worth, IL.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageMetadata("/corporate-catering");
+}
 
 const useCases = [
   {

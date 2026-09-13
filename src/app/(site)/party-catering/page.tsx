@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { PartyPopper, Sparkles, HandPlatter, Users } from "lucide-react";
 import { EventLandingTemplate } from "@/components/catering/EventLandingTemplate";
+import { resolvePageMetadata } from "@/lib/seo-overrides";
 
-export const metadata: Metadata = {
-  title: "Party Catering in Worth, IL",
-  description:
-    "Party catering from Rodeo Burgers and Chicken — smash burgers, chicken, and sides for family gatherings, holidays, and celebrations in Worth, IL and nearby suburbs.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageMetadata("/party-catering");
+}
 
 export default function PartyCateringPage() {
   return (

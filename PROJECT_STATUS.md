@@ -432,7 +432,7 @@ Tracking against the 12 implementation phases from the project brief.
   templated), so it will drift from the real service-area list unless
   manually updated — the Service Areas admin page reminds admins of this
 
-## Phase 8 — CMS / SEO 🟡 (SEO fundamentals + blog CMS done)
+## Phase 8 — CMS / SEO 🟡 (SEO fundamentals, blog CMS, per-page SEO editing done)
 
 - Done: `sitemap.xml`, `robots.txt`, `CateringBusiness` JSON-LD structured
   data (verified facts only — see `SEO_GUIDE.md`)
@@ -483,13 +483,60 @@ Tracking against the 12 implementation phases from the project brief.
   "coming soon" empty state again after deleting the post; ran a full
   `next build` and confirmed `/admin/blog`, `/admin/blog/[id]`, and
   `/blog/[slug]` all register correctly as dynamic routes
+- Done: per-page SEO editing for the 15 static marketing pages (homepage,
+  the catering hub, About, all 11 event/menu landing pages, and the blog
+  index — everything with a fixed route; the dynamic per-item pages
+  already have their own SEO fields from earlier phases: blog posts since
+  this same phase, `/catering/[slug]` location pages inherently generate
+  their own title from the city). `/admin/seo` lists every managed page
+  with an optional title/description override, backed by the existing
+  `SiteSetting` key-value table (`seo:<path>` keys) rather than a new
+  model — the same "reuse, don't duplicate" call already made for content
+  like site-wide business facts. Leaving both fields blank and saving (or
+  clicking "Reset to default") deletes the override row entirely rather
+  than storing an empty one, so the page falls back to its real default
+  the moment it's cleared, not to a blank title
+- `src/lib/seo-pages.ts` is the single source of truth for each managed
+  page's default title/description — both the live page (via
+  `resolvePageMetadata()` in `src/lib/seo-overrides.ts`) and the admin
+  screen's placeholder text read from the exact same registry, so unlike
+  the FAQ-answer/service-area drift bug from Phase 7, these can't
+  silently diverge. Converting each page from a static `export const
+  metadata` to `export async function generateMetadata()` was the only
+  way to make this live-editable — Next.js resolves metadata per-request
+  for `generateMetadata`, not once at build time
+- Found and fixed a real bug while building this, of the exact class the
+  blog post page already had to fix once: giving the *homepage* an
+  overridable title hit the same title-template doubling, but worse —
+  since the homepage previously had no `metadata` export at all, it was
+  relying on the root layout's `title.default`, which is the one case
+  Next.js does *not* template. The fix isn't "don't manually append the
+  suffix" this time (there's nothing to remove) but the opposite:
+  `resolvePageMetadata()` takes a `useAbsoluteTitle` flag, and the
+  homepage passes `true` to wrap its title as `{ absolute: ... }` —
+  Next.js's documented way to opt one page out of the site-wide template
+  — while every other page passes a plain string and still gets the
+  template applied normally
+- Verified end-to-end against the real database, not just the 6 new unit
+  tests (`seo-overrides.test.ts`, covering the default fallback, a full
+  override, a partial (title-only) override, a DB-unreachable fallback,
+  the homepage's `{ absolute }` wrapping, and the unregistered-path
+  guard): confirmed the homepage's tab title was unaffected by adding its
+  first-ever `generateMetadata` (still no doubled brand name); set a real
+  title override for `/corporate-catering` through `/admin/seo`, confirmed
+  it appeared instantly on the live page with the site's title template
+  still applied correctly on top of it, confirmed the override row via a
+  direct `psql` query; clicked "Reset to default," confirmed via `psql`
+  the row was deleted (not left empty), and confirmed the live page
+  reverted to its exact original title. Ran a full `next build` and
+  confirmed every converted page still prerenders as static despite now
+  reading from the database for its metadata, same as the homepage's
+  existing FAQ/review sections already did
 - Not done: a generic block-based page editor for the `Page` model (its
   `content Json` field implies a real page-builder UI — a materially
-  bigger, less-specified undertaking than the blog CMS, deliberately left
-  for a dedicated pass rather than rushed alongside it), per-page SEO
-  editing for the existing static marketing pages (homepage, catering,
-  event/location pages) — those titles/descriptions are still hardcoded in
-  each page's `generateMetadata`/`metadata` export, not database-editable
+  bigger, less-specified undertaking than the blog CMS or this SEO
+  override system, deliberately left for a dedicated pass), OG image
+  overrides (no media upload/picker UI exists yet for any model)
 
 ## Phase 9 — Marketing ✅
 

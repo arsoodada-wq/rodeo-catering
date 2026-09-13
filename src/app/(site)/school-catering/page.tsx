@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { School, Users, Clock, DollarSign } from "lucide-react";
 import { EventLandingTemplate } from "@/components/catering/EventLandingTemplate";
+import { resolvePageMetadata } from "@/lib/seo-overrides";
 
-export const metadata: Metadata = {
-  title: "School Event Catering in Worth, IL",
-  description:
-    "School event catering from Rodeo Burgers and Chicken — fundraisers, staff appreciation, and field days in Worth, IL and nearby suburbs.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return resolvePageMetadata("/school-catering");
+}
 
 export default function SchoolCateringPage() {
   return (
