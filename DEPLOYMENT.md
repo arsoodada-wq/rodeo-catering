@@ -25,6 +25,20 @@ tested runbook yet._
 4. Confirm `AUTH_SECRET` is a freshly generated production secret, not the
    one from local `.env`
 
+## After the first deploy: enable the daily follow-up reminder email
+
+`.github/workflows/follow-up-reminders.yml` already exists and runs daily,
+but does nothing until two GitHub repository secrets are set (Settings ->
+Secrets and variables -> Actions):
+
+- `SITE_URL` — the real deployed URL, no trailing slash
+- `CRON_SECRET` — must match the `CRON_SECRET` env var set on the
+  deployment itself (generate with `openssl rand -hex 32`)
+
+Once both are set, trigger the workflow manually once (Actions tab ->
+"Follow-up reminders" -> "Run workflow") to confirm it reaches the site
+before waiting for its next scheduled run.
+
 ## Backups
 
 Use your Postgres provider's built-in backup/point-in-time-recovery

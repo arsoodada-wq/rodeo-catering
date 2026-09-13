@@ -202,7 +202,7 @@ Tracking against the 12 implementation phases from the project brief.
   the menu…") — the streamed text is only the assistant's actual reply,
   which is what the system prompt already keeps concise
 
-## Phase 6 — CRM / Quotes 🟡 (lead capture, quotes, editing, and PDF export)
+## Phase 6 — CRM / Quotes ✅
 
 - Done: catering wizard creates real `Lead` rows; admin can view all leads
   and update status (`/admin/leads`), and drill into a lead detail page
@@ -285,9 +285,47 @@ Tracking against the 12 implementation phases from the project brief.
   fees/deposit/balance breakdown, which the simpler quote didn't
   exercise) — not just that *a* PDF came back. Ran a full `next build`
   and confirmed the route registers correctly
-- Not done: follow-up reminders (would need a real scheduled job — cron —
-  which needs an actual deployment target to run on; better suited to
-  Phase 12 once hosting is decided than built speculatively now)
+- Done: follow-up reminders (2026-09-12) — reconsidered the earlier "needs
+  a deployment first" call: the scheduler doesn't have to live inside this
+  app at all. `.github/workflows/follow-up-reminders.yml` runs on a daily
+  cron via GitHub Actions (independent infrastructure this repo already
+  has, regardless of what host the app itself eventually runs on) and
+  calls a new `/api/cron/follow-up-reminders` endpoint, guarded by a
+  shared `CRON_SECRET` so it can't be triggered by anyone else. That
+  endpoint calls `sendFollowUpDigestEmail()` (`src/lib/reminders.ts`),
+  which reuses the Phase 12 email infrastructure to send one digest
+  covering three things that already had a `followUpDate`/`expiresAt`
+  field sitting unused: **leads** whose follow-up date has arrived
+  (`Lead.followUpDate` — previously had a schema column but zero UI
+  anywhere to set it; added a "Follow-Up Reminder" section to the lead
+  detail page for that), **quotes** expiring within 2 days that are still
+  `SENT`/`VIEWED` (previously only checked reactively when someone tried
+  to accept an expired one), and **outreach contacts** with an activity
+  follow-up date due (`OutreachActivity.followUpDate` — Phase 9 already
+  built the UI to *set* this, but nothing ever read it back until now).
+  Sends nothing on a day with nothing due, since a digest that arrives
+  every day regardless of content trains the reader to stop opening it
+- The workflow itself does nothing until the site is actually deployed —
+  it needs `SITE_URL` and `CRON_SECRET` set as GitHub repository secrets
+  first, which the workflow file's own comments explain — but the code,
+  the endpoint, and the email logic are all real and fully working today;
+  the only missing piece is a URL for GitHub Actions to call, which was
+  the actual blocker, not "needs to be built once hosting exists"
+- Verified end-to-end against the real database and a real running
+  server, not just the 7 new unit tests (`reminders.test.ts`, covering
+  the three query filters and the mapped digest shape, plus the
+  send-nothing-when-empty and send-nothing-without-an-admin-email guards):
+  set a real overdue follow-up date on an actual lead (Sarah Chen) through
+  the live admin UI and confirmed it via `psql`; temporarily gave a real
+  quote (Q-2026-0002) a near-future `expiresAt`; called the actual cron
+  endpoint with a real bearer token and got back
+  `{leadsDue: 1, quotesExpiring: 1, outreachDue: 0}`; confirmed via server
+  logs the console-fallback digest email listed the exact right lead,
+  status, quote number, customer name, dollar amount, and both correct
+  admin deep-links; confirmed a wrong token and a missing token both get a
+  flat 401 with no distinguishing detail. Reverted both pieces of test
+  data via `psql` immediately after and confirmed clean. Ran a full
+  `next build` and confirmed the route registers correctly
 
 ## Phase 7 — Admin Dashboard 🟡 (auth + pricing screens)
 

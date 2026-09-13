@@ -1,0 +1,34 @@
+name: Follow-up reminders
+
+# Fires the app's own /api/cron/follow-up-reminders endpoint on a schedule.
+# This repo doesn't know or care what host the app is deployed to — it just
+# needs a reachable URL, set once as the SITE_URL repository secret after
+# deployment. Until then, this workflow exists but has nothing to call and
+# does nothing on its own; run it manually (workflow_dispatch, below) once
+# SITE_URL and CRON_SECRET are set to confirm it works.
+#
+# Required repository secrets (Settings -> Secrets and variables -> Actions):
+#   SITE_URL     e.g. https://cateringsite.example.com (no trailing slash)
+#   CRON_SECRET  must match the CRON_SECRET env var set on the deployment
+
+on:
+  schedule:
+    # 14:00 UTC ~= 8-9am Central depending on daylight saving. Adjust the
+    # hour to taste once there's a real send time preference; this just
+    # needs to land at a reasonable start-of-business hour.
+    - cron: "0 14 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call the follow-up reminders endpoint
+        run: |
+          if [ -z "${{ secrets.SITE_URL }}" ] || [ -z "${{ secrets.CRON_SECRET }}" ]; then
+            echo "SITE_URL and/or CRON_SECRET repository secrets are not set yet — skipping." \
+              "Set both once the app is deployed, then re-run this workflow manually to confirm."
+            exit 0
+          fi
+          curl -sf -X POST "${{ secrets.SITE_URL }}/api/cron/follow-up-reminders" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

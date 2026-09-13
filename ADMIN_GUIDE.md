@@ -95,6 +95,18 @@ way or (once built) by an existing Super Admin.
   **accepted or declined** a quote, it locks — you can't edit the record
   of what they agreed to. If the event changed enough to need new numbers
   at that point, create a fresh quote from the lead's page instead
+- **Follow-up reminders**: set a "Follow-Up Reminder" date on any lead's
+  detail page and it's included in a daily digest email
+  (`ADMIN_NOTIFICATION_EMAIL`) once that date arrives — it keeps
+  reappearing in the digest every day until you either change its status
+  to Completed/Lost or clear the date. The same daily email also flags any
+  sent-but-not-yet-accepted quote expiring within 2 days, and any outreach
+  contact (see Outreach, below) with a logged activity's follow-up date
+  due. Nothing to configure beyond `ADMIN_NOTIFICATION_EMAIL` and
+  `RESEND_API_KEY` (already needed for lead notifications) plus
+  `CRON_SECRET` — see `.env.example` and
+  `.github/workflows/follow-up-reminders.yml` for what triggers the daily
+  send once this site has a real deployed URL
 - **Menu & Pricing** (`/admin/menu`): every menu item grouped by category —
   set a price, choose flat vs. per-person pricing, and toggle availability.
   Items with no price still show on the site, marked "available on

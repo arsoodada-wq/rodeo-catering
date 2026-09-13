@@ -4,6 +4,7 @@ import { ArrowLeft, Mail, Phone, MapPin, Calendar, Users } from "lucide-react";
 import { db } from "@/lib/db";
 import { formatEventDate } from "@/lib/format";
 import { LeadStatusSelect } from "@/components/admin/LeadStatusSelect";
+import { LeadFollowUpDate } from "@/components/admin/LeadFollowUpDate";
 import { QuoteBuilder } from "@/components/admin/QuoteBuilder";
 import { AccessRestricted } from "@/components/admin/AccessRestricted";
 import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
@@ -103,6 +104,8 @@ export default async function AdminLeadDetailPage({
               )}
             </ul>
           </div>
+
+          <LeadFollowUpDate leadId={lead.id} followUpDate={lead.followUpDate} />
 
           {foodSelections.length > 0 && (
             <div className="rounded-2xl border border-ink-900/8 bg-white p-5">
