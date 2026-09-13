@@ -74,6 +74,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Default Server Action body limit (1MB) is too small for an image
+  // upload — the media library (src/app/actions/media.ts) rejects files
+  // over 4MB itself; this just needs enough headroom above that for
+  // multipart overhead.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "5mb",
+    },
+  },
 };
 
 export default nextConfig;

@@ -57,6 +57,7 @@ export async function getPublishedBlogPosts() {
     return await db.blogPost.findMany({
       where: { status: "PUBLISHED" },
       orderBy: { publishedAt: "desc" },
+      include: { featuredImage: true },
     });
   } catch {
     return [];
@@ -65,7 +66,7 @@ export async function getPublishedBlogPosts() {
 
 export async function getPublishedBlogPostBySlug(slug: string) {
   try {
-    const post = await db.blogPost.findUnique({ where: { slug } });
+    const post = await db.blogPost.findUnique({ where: { slug }, include: { featuredImage: true } });
     if (!post || post.status !== "PUBLISHED") return null;
     return post;
   } catch {

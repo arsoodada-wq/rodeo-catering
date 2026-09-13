@@ -136,13 +136,21 @@ way or (once built) by an existing Super Admin.
   deactivating it later takes the page down but doesn't un-index it from
   Google immediately. Check the "Where are you located" FAQ afterward
   (its answer is free text and won't update itself)
+- **Media Library** (`/admin/media`): upload JPEG/PNG/WebP/GIF/SVG images
+  (4MB max) with alt text, a caption, and a category. Images are stored in
+  the database itself rather than a separate file host — fine for the
+  number of images this site actually needs, and means no extra service to
+  set up. Deleting an image clears it from anywhere it was in use (e.g. a
+  blog post's featured image) rather than failing or leaving something
+  broken
 - **Blog** (`/admin/blog`): write and publish planning guides that live at
   `/blog`. A new post starts as a draft with an auto-generated URL slug
   (editable later) — it's never visible on the public site until you set
-  its status to Published. Content is plain text (separate paragraphs with
-  a blank line); there's an optional "search appearance" section to
-  override the page title/description shown in Google, otherwise it falls
-  back to the post title and an excerpt of the content automatically
+  its status to Published. Pick a featured image from the Media Library
+  (optional). Content is plain text (separate paragraphs with a blank
+  line); there's an optional "search appearance" section to override the
+  page title/description shown in Google, otherwise it falls back to the
+  post title and an excerpt of the content automatically
 - **Page SEO** (`/admin/seo`): override the Google search title/description
   for any of the 15 static pages (homepage, the catering hub, About, and
   every event/menu landing page) without a code change — leave a field
@@ -176,9 +184,7 @@ way or (once built) by an existing Super Admin.
 - Orders (post-acceptance fulfillment tracking, distinct from the quote
   itself)
 - A generic editor for building/editing standalone landing pages (the
-  `Page` model), and a media library for uploading images
-- Managing SEO metadata for the static marketing pages (blog posts already
-  have their own SEO fields — see the Blog section above)
+  `Page` model)
 
 ## In the meantime
 

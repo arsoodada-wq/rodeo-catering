@@ -463,12 +463,61 @@ Tracking against the 12 implementation phases from the project brief.
   worked; then changed it back to the original and confirmed that login
   worked too — so the account was left exactly as documented in `.env`,
   not accidentally altered by testing this
-- Not done: management screens for every other content type in the schema
-  (a generic page editor for the `Page` model, a media library — blog,
-  social, and outreach are now covered by Phases 8 and 9). Note: the
-  "Where are you located" FAQ answer is free text (admin-owned, not
-  templated), so it will drift from the real service-area list unless
-  manually updated — the Service Areas admin page reminds admins of this
+- Done: a media library (2026-09-12) — the one piece of Phase 7 that had
+  been marked blocked on "needs a hosting decision first," reconsidered
+  the same way the Phase 6 cron blocker was: it needed *a* file-upload
+  pipeline, not necessarily one tied to a specific host. `/admin/media`
+  stores uploaded images as `data:` URIs directly in the existing
+  `Media.url` field (a Prisma `String`/Postgres `text` column with no
+  length cap — no schema migration needed) rather than in S3/R2/Vercel
+  Blob/etc. This is a deliberate call for this app's actual scale (a
+  local catering business's handful of menu/blog photos, not a
+  high-volume gallery): Postgres is the one piece of infrastructure
+  already guaranteed to exist no matter which host is eventually chosen,
+  so the library works identically today in local dev and after any
+  future deploy, with no vendor account or API key to set up first.
+  Upload validates file type (JPEG/PNG/WebP/GIF/SVG only) and a 4MB cap
+  server-side, not just in the file picker's `accept` attribute; the
+  default Server Action body limit (1MB) was raised to 5MB in
+  `next.config.ts` to fit. If this business ever uploads hundreds of
+  large photos, swapping what `uploadMedia()` writes to `url` for a real
+  object-storage upload later is a contained change, not a rewrite —
+  not doing that today isn't a shortcut that creates a rewrite later, it's
+  the same interface either way
+- A `MediaPicker` component (grid thumbnail picker, not a dropdown of
+  filenames) is the first real integration: added a "Featured Image"
+  field to the Blog editor, wired through `BlogPost.featuredImageId` —
+  present in the schema since Phase 2, unused until now, same situation
+  as several other fields this session has found and finally wired up.
+  Confirmed empirically (not assumed) what deleting an in-use image
+  actually does: Prisma's default referential action for this optional
+  relation is `SetNull`, not a foreign-key error — deleting an image sets
+  any blog post using it back to no featured image rather than failing
+  the delete or leaving a broken reference, and the confirm dialog's
+  copy says so
+- Verified end-to-end against the real database and a real running
+  server, not just the 5 new unit tests (`media.test.ts`, covering the
+  permission check, the type/size rejections, and the successful
+  data-URI encoding): uploaded a real image file through the actual
+  upload form (a synthetic `File` + `DataTransfer` injected into the real
+  file input, since this session's browser automation has no native
+  file-picker support — the button click and form submission were still
+  the real ones), confirmed the stored `data:image/png;base64,...` value
+  and metadata via a direct `psql` query, picked that image as a real
+  test blog post's featured image through the actual `MediaPicker` UI,
+  confirmed `featuredImageId` saved via `psql`, confirmed the image
+  rendered correctly on both the public blog list and the post page,
+  then deleted the image and confirmed via `psql` the post's
+  `featuredImageId` went to `null` (not an error) and the post page still
+  rendered cleanly with no broken image. Deleted the test post and image
+  afterward. Ran a full `next build` and confirmed
+  `/admin/media`/`/api/media`/`/api/media/[id]` all register correctly
+- Not done: a generic block-based editor for the `Page` model (outreach
+  and social already got their own admin screens in Phases 8/9 — this is
+  the one remaining content type with no UI at all). Note: the "Where are
+  you located" FAQ answer is free text (admin-owned, not templated), so
+  it will drift from the real service-area list unless manually updated —
+  the Service Areas admin page reminds admins of this
 
 ## Phase 8 — CMS / SEO 🟡 (SEO fundamentals, blog CMS, per-page SEO editing done)
 

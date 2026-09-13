@@ -6,6 +6,7 @@ import { Check, ExternalLink, Loader2, Trash2 } from "lucide-react";
 import { updateBlogPost, deleteBlogPost } from "@/app/actions/blog";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/ToastProvider";
+import { MediaPicker } from "@/components/admin/MediaPicker";
 import { cn } from "@/lib/cn";
 
 type Props = {
@@ -15,6 +16,7 @@ type Props = {
   category: string | null;
   tags: string[];
   content: string;
+  featuredImageId: string | null;
   seoTitle: string | null;
   seoDescription: string | null;
   canonicalUrl: string | null;
@@ -28,6 +30,7 @@ export function BlogPostEditor(post: Props) {
   const [category, setCategory] = useState(post.category ?? "");
   const [tags, setTags] = useState(post.tags.join(", "));
   const [content, setContent] = useState(post.content);
+  const [featuredImageId, setFeaturedImageId] = useState<string | null>(post.featuredImageId);
   const [seoTitle, setSeoTitle] = useState(post.seoTitle ?? "");
   const [seoDescription, setSeoDescription] = useState(post.seoDescription ?? "");
   const [canonicalUrl, setCanonicalUrl] = useState(post.canonicalUrl ?? "");
@@ -51,6 +54,7 @@ export function BlogPostEditor(post: Props) {
         category,
         tags,
         content,
+        featuredImageId,
         seoTitle,
         seoDescription,
         canonicalUrl,
@@ -127,6 +131,13 @@ export function BlogPostEditor(post: Props) {
           </label>
           <input value={tags} onChange={(e) => setTags(e.target.value)} className="input mt-1" />
         </div>
+      </div>
+
+      <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-ink-400">
+        Featured image (optional)
+      </label>
+      <div className="mt-1">
+        <MediaPicker selectedId={featuredImageId} onSelect={setFeaturedImageId} />
       </div>
 
       <label className="mt-3 block text-xs font-semibold uppercase tracking-wide text-ink-400">

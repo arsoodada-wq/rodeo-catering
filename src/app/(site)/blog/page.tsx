@@ -50,15 +50,25 @@ export default async function BlogPage() {
           <Link
             key={post.id}
             href={`/blog/${post.slug}`}
-            className="rounded-2xl border border-ink-900/8 bg-white p-6 transition-colors hover:border-rodeo-200"
+            className="overflow-hidden rounded-2xl border border-ink-900/8 bg-white transition-colors hover:border-rodeo-200"
           >
-            {post.category && (
-              <p className="text-xs font-semibold uppercase tracking-wide text-rodeo-600">
-                {post.category}
-              </p>
+            {post.featuredImage && (
+              // eslint-disable-next-line @next/next/no-img-element -- data: URI, not an optimizable asset
+              <img
+                src={post.featuredImage.url}
+                alt={post.featuredImage.altText ?? ""}
+                className="h-48 w-full object-cover"
+              />
             )}
-            <h2 className="mt-1 text-xl font-bold text-ink-900">{post.title}</h2>
-            <p className="mt-2 text-sm text-ink-500">{excerpt(post.content)}</p>
+            <div className="p-6">
+              {post.category && (
+                <p className="text-xs font-semibold uppercase tracking-wide text-rodeo-600">
+                  {post.category}
+                </p>
+              )}
+              <h2 className="mt-1 text-xl font-bold text-ink-900">{post.title}</h2>
+              <p className="mt-2 text-sm text-ink-500">{excerpt(post.content)}</p>
+            </div>
           </Link>
         ))}
       </div>

@@ -59,6 +59,7 @@ export default async function AdminBlogPostPage({ params }: { params: Promise<{ 
           category={data.post.category}
           tags={data.post.tags}
           content={data.post.content}
+          featuredImageId={data.post.featuredImageId}
           seoTitle={data.post.seoTitle}
           seoDescription={data.post.seoDescription}
           canonicalUrl={data.post.canonicalUrl}

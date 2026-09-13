@@ -77,6 +77,15 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           <p className="mt-3 text-sm text-ink-400">{formatEventDate(post.publishedAt)}</p>
         )}
 
+        {post.featuredImage && (
+          // eslint-disable-next-line @next/next/no-img-element -- data: URI, not an optimizable asset
+          <img
+            src={post.featuredImage.url}
+            alt={post.featuredImage.altText ?? ""}
+            className="mt-6 max-h-96 w-full rounded-2xl object-cover"
+          />
+        )}
+
         <div className="mt-8 space-y-4 text-ink-600">
           {paragraphs.map((paragraph, i) => (
             <p key={i}>{paragraph}</p>

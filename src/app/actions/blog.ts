@@ -75,6 +75,7 @@ const updateSchema = z.object({
   category: z.string().optional(),
   tags: z.string().optional(), // comma-separated in the form
   content: z.string().optional(),
+  featuredImageId: z.string().nullable().optional(),
   seoTitle: z.string().optional(),
   seoDescription: z.string().optional(),
   canonicalUrl: z.string().optional(),
@@ -115,6 +116,7 @@ export async function updateBlogPost(input: z.infer<typeof updateSchema>) {
         category: parsed.data.category || undefined,
         tags: parseTags(parsed.data.tags),
         content: parsed.data.content || "",
+        featuredImageId: parsed.data.featuredImageId || null,
         seoTitle: parsed.data.seoTitle || undefined,
         seoDescription: parsed.data.seoDescription || undefined,
         canonicalUrl: parsed.data.canonicalUrl || undefined,
