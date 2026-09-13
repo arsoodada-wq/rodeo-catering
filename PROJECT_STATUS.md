@@ -1067,6 +1067,18 @@ Search the codebase for `REQUIRES BUSINESS CONFIRMATION`. Known items:
 - Vegan/Halal/Kosher accuracy (existing site is inconsistent — homepage says
   Halal, catering page says Kosher)
 - Production domain for this catering site
-- Real event/food photography (homepage currently uses typography-led
-  hero sections rather than stock photos, per the brief's instruction to
-  avoid generic stock imagery)
+- ~~Real event/food photography~~ — partially addressed 2026-09-13: pulled
+  real photos directly from the business's own existing site
+  (rodeoburgersandchicken.com) and its Clover menu-photo CDN — the actual
+  storefront, and real dishes (Flying Dutchman burger, Buffalo Chicken
+  Bowl, Supreme Nachos, Fried Chicken Bowl) matched to the exact same
+  named item wherever they appear (homepage hero/menu showcase, About,
+  `/catering`, `/burger-catering`, `/chicken-catering`). Still open: none
+  of the remaining 9 event-type pages (corporate, live-cookout, birthday,
+  graduation, wedding, school, sports-team, party, large-group) have a
+  real photo that actually matches their specific event type — the
+  existing site has no corporate-lunch or wedding-catering photography to
+  pull from, and inventing a generic "party" stock photo would be exactly
+  the mismatched imagery this item was flagged to avoid. Real photography
+  for those still needs the business (an event shoot, or photos from a
+  past catered event)
