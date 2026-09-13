@@ -18,12 +18,59 @@ const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
 ];
 
+/**
+ * Audited every resource this app's pages actually load in the browser
+ * before writing this (Phase 10 had deliberately skipped a CSP until that
+ * audit was done — see PROJECT_STATUS.md): no next/image remote domains
+ * configured, no third-party <script>/<link> tags, no analytics/pixel
+ * scripts (the GA/Meta/TikTok env vars in .env.example are unused
+ * placeholders — see the Phase 12 notes), Poppins is self-hosted by
+ * next/font (no fonts.googleapis.com request at runtime), and the only
+ * client-side fetch() calls (ConciergeChat, every admin form) hit this
+ * same origin. The Anthropic/Resend API calls happen server-side inside
+ * API routes and Server Actions, never from the browser, so they need no
+ * connect-src entry — CSP only governs what the page itself loads.
+ * `'unsafe-inline'` stays for script-src/style-src rather than a
+ * nonce-based policy: Next.js's own hydration/bootstrap scripts and
+ * Tailwind's runtime style injection both need it, and building the
+ * nonce-per-request plumbing (which has to move header generation out of
+ * this static next.config.ts and into src/proxy.ts) is a bigger, riskier
+ * change than this pass — everything else here is still a real
+ * restriction: no external script, image, font, or connection origin can
+ * load at all.
+ */
+const contentSecurityPolicy = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "frame-src 'none'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "upgrade-insecure-requests",
+].join("; ");
+
+// Applied in production only: next dev's Turbopack HMR client opens its own
+// WebSocket back to the dev server, which a strict connect-src would block
+// mid-development for no real security benefit (localhost isn't the threat
+// model this header defends against). Verified for real against a
+// production build (`next build && next start`), not just reasoned about —
+// see PROJECT_STATUS.md.
+const productionOnlyHeaders =
+  process.env.NODE_ENV === "production"
+    ? [{ key: "Content-Security-Policy", value: contentSecurityPolicy }]
+    : [];
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
       {
         source: "/:path*",
-        headers: securityHeaders,
+        headers: [...securityHeaders, ...productionOnlyHeaders],
       },
     ];
   },

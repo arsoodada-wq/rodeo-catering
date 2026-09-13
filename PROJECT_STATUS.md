@@ -587,7 +587,7 @@ Tracking against the 12 implementation phases from the project brief.
   scope — see above), reminders/notifications for outreach follow-up dates,
   bulk import of outreach contacts
 
-## Phase 10 — Security / Performance audit 🟡 (audited, high/medium items fixed)
+## Phase 10 — Security / Performance audit 🟡 (audited, high/medium items + CSP fixed)
 
 Ran a structured audit covering auth/brute-force, token entropy, IDOR,
 injection, security headers, secrets hygiene, dependency vulnerabilities,
@@ -640,11 +640,52 @@ and cookie/session config. Findings and what was done about each:
   `Permissions-Policy`, and `Strict-Transport-Security` (inert over plain
   HTTP so harmless in local dev, takes effect once the real domain is
   live over HTTPS). Verified via a real fetch against the running dev
-  server that all five headers are present on the response. Skipped a
-  full Content-Security-Policy for now — doing one properly means
-  cataloging every external resource this app loads first, and a rushed
-  CSP that's either too loose to matter or breaks a legitimate resource
-  is worse than none; flagged as a follow-up
+  server that all five headers are present on the response
+- **Fixed — no Content-Security-Policy (2026-09-12).** Deliberately
+  deferred earlier in this same audit until the app's actual resource
+  usage could be cataloged rather than guessed at — a rushed CSP that's
+  either too loose to matter or breaks a legitimate resource is worse
+  than none. Did that audit now that the app has grown to its current
+  size: no `next/image` remote domains configured anywhere, no
+  third-party `<script>`/`<link>` tags, no analytics/pixel scripts (the
+  GA/Meta/TikTok env vars are still unused placeholders — see Phase 12),
+  Poppins is self-hosted by `next/font` (no runtime request to
+  fonts.googleapis.com), and every client-side `fetch()` in the app
+  (`ConciergeChat`, every admin form's Server Action) hits this same
+  origin. The Anthropic/Resend calls happen server-side inside API routes
+  and Server Actions, never from the browser, so they need no CSP
+  allowance at all — CSP only governs what the page itself loads. Result:
+  `default-src 'self'` with `frame-src`/`frame-ancestors`/`object-src
+  'none'`, `base-uri`/`form-action 'self'`, and `img-src`/`font-src 'self'
+  data:` — a real, meaningfully restrictive policy blocking any external
+  script, image, font, or connection origin from loading at all.
+  `script-src`/`style-src` keep `'unsafe-inline'` rather than a
+  nonce-based policy: Next.js's own hydration/bootstrap scripts and
+  Tailwind's runtime style injection both need it, and moving header
+  generation from this static `next.config.ts` into `src/proxy.ts` to
+  thread a per-request nonce is a bigger, riskier change than this pass —
+  flagged as a possible future hardening step, not done now. Applied in
+  production only (`process.env.NODE_ENV === "production"`) since `next
+  dev`'s Turbopack HMR client opens its own WebSocket back to the dev
+  server that a strict `connect-src` would otherwise block for no real
+  security benefit — localhost isn't this header's threat model
+- Verified against a real production server, not just written and
+  assumed correct: ran `next build && next start` (the same
+  dev/prod-parity discipline used throughout this project, since this
+  class of bug has hidden from dev mode before), confirmed the
+  `Content-Security-Policy` header was present and exactly as configured
+  via a real `fetch()`, confirmed it was absent under `next dev`, then
+  exercised the app for real under the production CSP with a clean
+  browser tab (no stale console history) and watched for violations at
+  every layer: the homepage, the full `/style-guide` page (opened the
+  Modal, triggered a Toast — the two components most likely to hit an
+  inline-style/script restriction), a real Server Action save-and-reset
+  round trip on the new `/admin/seo` page (confirmed via a direct `psql`
+  query both that the save landed and the reset cleaned it up), the
+  catering wizard's step navigation, a direct same-origin `fetch()` to
+  `/api/concierge` (confirmed it still correctly returns
+  `notConfigured` rather than being blocked), `/api/health`, and a
+  genuine 404 page. Zero CSP violations on any of them
 - **Fixed — session lifetime.** Auth.js's 30-day JWT default applied to
   admin sessions with no override. Shortened to 7 days
   (`src/lib/auth.config.ts`) — a safer default for a session that can view
@@ -686,9 +727,10 @@ and cookie/session config. Findings and what was done about each:
   the real access control is `src/proxy.ts` plus the per-action
   permission checks above)
 - Not done: a real load/performance pass (this app has no traffic yet to
-  profile), a proper CSP, migrating the in-memory rate limiter to a
-  shared store (only matters if/when this moves to multi-instance
-  serverless hosting)
+  profile), migrating the in-memory rate limiter to a shared store (only
+  matters if/when this moves to multi-instance serverless hosting), a
+  nonce-based CSP (the current one still allows `'unsafe-inline'` for
+  scripts/styles — see above)
 
 ## Phase 11 — Testing 🟡 (unit tests for the highest-risk logic; no e2e yet)
 
