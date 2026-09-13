@@ -39,8 +39,8 @@ email, temporary password, role), edit an existing one's name/role/active
 status, or reset someone's password. New accounts sign in at `/admin/login`
 with the email and password you set — nothing is emailed automatically, so
 share the temporary password with them yourself and ask them to change it
-(there's still no self-service password-change screen — see "What will
-eventually live here" for that).
+at **`/admin/account`** ("My Account," available to every signed-in admin)
+the first time they log in.
 
 You can't deactivate your own account or change your own role from this
 screen, even as a Super Admin — this is a deliberate guard against locking
@@ -55,10 +55,9 @@ account or via `npm run db:studio`.
 2. Run `npm run db:seed` — this creates your admin account (or updates its
    password if it already exists).
 3. Go to `/admin/login` and sign in with `ADMIN_EMAIL`/`ADMIN_PASSWORD`.
-4. Change your password after first login (there is no self-service
-   password-change screen yet — update it via `npm run db:studio` on the
-   `User` table's `passwordHash`, hashed with bcrypt, or re-run the seed
-   with a new `ADMIN_PASSWORD`).
+4. Change your password after first login at **`/admin/account`** ("My
+   Account" in the sidebar) — you'll need to enter the current password
+   to set a new one.
 
 There is no signup flow by design — every admin account is created this
 way or (once built) by an existing Super Admin.
@@ -151,16 +150,17 @@ way or (once built) by an existing Super Admin.
 
 ## What will eventually live here
 
-- Self-service password change (today an admin's password can only be
-  reset by a Super Admin at `/admin/users`, or via `npm run db:studio`)
 - Adding brand-new menu items/packages (today's screens edit existing ones;
   use `npm run db:studio` to add new rows — FAQs, Reviews, Awards, and
   Service Areas are the exception, which already support adding new
   entries directly)
 - Delivery fees (a `DeliveryFee` model exists per service area; no editor yet)
-- Quote PDF export, orders
-- Managing blog posts and landing pages
-- Managing SEO metadata per page
+- Orders (post-acceptance fulfillment tracking, distinct from the quote
+  itself)
+- A generic editor for building/editing standalone landing pages (the
+  `Page` model), and a media library for uploading images
+- Managing SEO metadata for the static marketing pages (blog posts already
+  have their own SEO fields — see the Blog section above)
 
 ## In the meantime
 

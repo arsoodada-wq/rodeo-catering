@@ -404,10 +404,31 @@ Tracking against the 12 implementation phases from the project brief.
   Permissions) with no extra code needed to make that happen — it's the
   same permission check every other page already uses. Deleted the test
   account afterward
+- Done: self-service password change, at `/admin/account` (linked as "My
+  Account" next to Sign Out — available to every signed-in admin, not
+  permission-gated, since it only ever touches your own account).
+  `changeOwnPassword` requires the *current* password to verify before
+  setting a new one (`bcrypt.compare` against the stored hash) — without
+  that check, anyone who got hold of an unattended, already-logged-in
+  session could lock the real owner out permanently just by setting a new
+  password. Rate-limited per-account (5 attempts/15 min, the same
+  `checkRateLimit` primitive used for login attempts) for the same reason:
+  no CAPTCHA exists here, so unlimited guesses at the current password
+  would otherwise turn a stolen session cookie into a full account
+  takeover
+- Verified end-to-end against the real admin account, not just unit
+  tests (4 new tests in `change-own-password.test.ts` cover the wrong-
+  current-password rejection, the successful hash update, and the rate
+  limit): submitted the real wrong current password and confirmed
+  rejection; changed the real dev admin's password through the actual
+  UI, signed out, and confirmed logging back in with the *new* password
+  worked; then changed it back to the original and confirmed that login
+  worked too — so the account was left exactly as documented in `.env`,
+  not accidentally altered by testing this
 - Not done: management screens for every other content type in the schema
-  (blog, pages, media, social, outreach), self-service password change.
-  Note:
-  the "Where are you located" FAQ answer is free text (admin-owned, not
+  (a generic page editor for the `Page` model, a media library — blog,
+  social, and outreach are now covered by Phases 8 and 9). Note: the
+  "Where are you located" FAQ answer is free text (admin-owned, not
   templated), so it will drift from the real service-area list unless
   manually updated — the Service Areas admin page reminds admins of this
 

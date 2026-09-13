@@ -15,6 +15,7 @@ import {
   CalendarDays,
   Handshake,
   Newspaper,
+  KeyRound,
 } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
 import { PERMISSIONS, roleHasPermission, type PermissionKey } from "@/lib/permissions";
@@ -74,19 +75,27 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <div className="border-t border-ink-900/8 pt-4">
           <p className="truncate text-sm font-medium text-ink-900">{session?.user?.name}</p>
           <p className="truncate text-xs text-ink-400">{session?.user?.email}</p>
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/admin/login" });
-            }}
-          >
-            <button
-              type="submit"
-              className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-ink-400 hover:text-rodeo-600"
+          <div className="mt-3 flex items-center gap-3">
+            <Link
+              href="/admin/account"
+              className="flex items-center gap-1.5 text-xs font-semibold text-ink-400 hover:text-rodeo-600"
             >
-              <LogOut className="h-3.5 w-3.5" /> Sign out
-            </button>
-          </form>
+              <KeyRound className="h-3.5 w-3.5" /> My Account
+            </Link>
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: "/admin/login" });
+              }}
+            >
+              <button
+                type="submit"
+                className="flex items-center gap-1.5 text-xs font-semibold text-ink-400 hover:text-rodeo-600"
+              >
+                <LogOut className="h-3.5 w-3.5" /> Sign out
+              </button>
+            </form>
+          </div>
         </div>
       </aside>
 
