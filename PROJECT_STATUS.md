@@ -767,7 +767,7 @@ Tracking against the 12 implementation phases from the project brief.
   scope — see above), reminders/notifications for outreach follow-up dates,
   bulk import of outreach contacts
 
-## Phase 10 — Security / Performance audit 🟡 (audited, high/medium items + CSP fixed)
+## Phase 10 — Security / Performance audit ✅
 
 Ran a structured audit covering auth/brute-force, token entropy, IDOR,
 injection, security headers, secrets hygiene, dependency vulnerabilities,
@@ -906,11 +906,58 @@ and cookie/session config. Findings and what was done about each:
   `/admin`, `/api`, `/quote` (crawler hygiene only, not access control —
   the real access control is `src/proxy.ts` plus the per-action
   permission checks above)
+- **Fixed — nonce-based CSP for `/admin/*` (2026-09-13).** Tried
+  site-wide first — a nonce needs a fresh value every request, which
+  means calling `headers()` somewhere every page renders, and
+  `LocalBusinessSchema` (the component with one of this app's two
+  `dangerouslySetInnerHTML` `<script>` tags) sits in the shared public
+  site layout. That silently opted every public marketing page out of
+  static generation — confirmed via a real `next build`: ~15 pages
+  (homepage, all event-type pages, `/catering`, `/blog`) flipped from
+  prerendered to server-rendered-per-request. Reverted that approach:
+  slower page loads and full server-side work on every visit is a real
+  cost, worse for SEO, for defense-in-depth against a script-injection
+  class this app's own audit above found no actual vector for on the
+  public site. Scoped the nonce to `/admin/*` instead — moved from
+  `next.config.ts`'s static `headers()` into `src/proxy.ts`, which
+  already ran per-request for the login gate. Those routes were already
+  100% server-rendered for auth anyway (nothing given up there), no
+  component under `/admin` uses `dangerouslySetInnerHTML` (so the policy
+  needs zero exceptions — Next's own framework bootstrap scripts pick up
+  the nonce automatically off the same header), and it's the genuinely
+  higher-value surface to harden: session cookies and every mutating
+  action live there. `next.config.ts` keeps the original site-wide
+  `'unsafe-inline'` policy for everything except `/admin/*` (excluded via
+  a custom-regex `source` path rather than trusting header-precedence
+  between config and middleware to resolve correctly on its own).
+  `src/proxy.ts`'s matcher stays `/admin/:path*`, exactly as before —
+  broadening it to run on every route was the first thing tried and
+  undone along with the site-wide nonce, since the auth-redirect logic
+  would otherwise need re-guarding against firing on public pages too.
+  Style-src keeps `'unsafe-inline'` even on `/admin/*`: a few components
+  (`Hero`, `FinalCta`, `global-error`) use inline `style={{}}`
+  attributes, and CSP has no nonce mechanism for style *attributes*
+  (only `<style>` elements) — script-src is what actually stops an
+  attacker's injected code from executing, which is the real value here
+- Verified against a real production build (`next build && next start`),
+  not just reasoned about: confirmed via `curl -I` that the homepage,
+  `/catering`, and `/burger-catering` all still get the original
+  `'unsafe-inline'` policy while `/admin/login` gets a distinct,
+  freshly-generated nonce on every single request; confirmed all 47
+  routes prerender exactly as before the change (no regression) via the
+  build output; in a real browser, signed out, reloaded the real login
+  form, signed back in, and did a real Server Action save-and-reset round
+  trip on `/admin/seo` (exercising a client-side toast notification too)
+  — zero CSP violations, zero console errors, at every step. Both the
+  Vitest suite (110 tests, including the real-database quote-lifecycle
+  integration tests) and the Playwright e2e test (which signs in as
+  admin as part of its normal flow) still pass unchanged
 - Not done: a real load/performance pass (this app has no traffic yet to
-  profile), migrating the in-memory rate limiter to a shared store (only
-  matters if/when this moves to multi-instance serverless hosting), a
-  nonce-based CSP (the current one still allows `'unsafe-inline'` for
-  scripts/styles — see above)
+  profile), migrating the in-memory rate limiter to a shared store — not
+  attempted, and no longer planned as a near-term item now that hosting
+  is heading toward a single Hostinger VPS rather than multi-instance
+  serverless, which is the only scenario where the current in-memory
+  limiter would actually be wrong
 
 ## Phase 11 — Testing ✅
 

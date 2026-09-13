@@ -19,25 +19,32 @@ const securityHeaders = [
 ];
 
 /**
- * Audited every resource this app's pages actually load in the browser
- * before writing this (Phase 10 had deliberately skipped a CSP until that
- * audit was done — see PROJECT_STATUS.md): no next/image remote domains
- * configured, no third-party <script>/<link> tags, no analytics/pixel
- * scripts (the GA/Meta/TikTok env vars in .env.example are unused
- * placeholders — see the Phase 12 notes), Poppins is self-hosted by
+ * Audited every resource this app's public pages actually load in the
+ * browser before writing this (Phase 10 had deliberately skipped a CSP
+ * until that audit was done — see PROJECT_STATUS.md): no next/image remote
+ * domains configured, no third-party <script>/<link> tags, no
+ * analytics/pixel scripts (the GA/Meta/TikTok env vars in .env.example are
+ * unused placeholders — see the Phase 12 notes), Poppins is self-hosted by
  * next/font (no fonts.googleapis.com request at runtime), and the only
  * client-side fetch() calls (ConciergeChat, every admin form) hit this
- * same origin. The Anthropic/Resend API calls happen server-side inside
- * API routes and Server Actions, never from the browser, so they need no
- * connect-src entry — CSP only governs what the page itself loads.
- * `'unsafe-inline'` stays for script-src/style-src rather than a
- * nonce-based policy: Next.js's own hydration/bootstrap scripts and
- * Tailwind's runtime style injection both need it, and building the
- * nonce-per-request plumbing (which has to move header generation out of
- * this static next.config.ts and into src/proxy.ts) is a bigger, riskier
- * change than this pass — everything else here is still a real
- * restriction: no external script, image, font, or connection origin can
- * load at all.
+ * same origin. `script-src`/`style-src` keep `'unsafe-inline'` here rather
+ * than a nonce: Next.js's own hydration/bootstrap scripts, this app's two
+ * JSON-LD <script> tags (LocalBusinessSchema, the blog post's BlogPosting
+ * schema), and a few components' inline `style={{}}` attributes (Hero,
+ * FinalCta, global-error) all need it. Threading a nonce through here
+ * instead requires calling `headers()` somewhere every public page
+ * renders (LocalBusinessSchema sits in the shared site layout) — tried
+ * that, and it silently opts every public marketing page out of static
+ * generation (confirmed via a real `next build`: ~15 pages flipped from
+ * prerendered to server-rendered-per-request). That's a real cost — slower
+ * page loads and full server-side work on every visit, worse for SEO —
+ * for defense-in-depth against a script-injection class this app's Phase
+ * 10 audit found no actual vector for. The admin dashboard is a better
+ * trade: see src/proxy.ts, which gives `/admin/*` its own nonce-based,
+ * fully `'unsafe-inline'`-free policy — those routes were already
+ * server-rendered per-request for auth anyway, so nothing is given up
+ * there, and it's the more valuable surface to harden (session cookies,
+ * every mutating action) if a script-injection bug ever did appear.
  */
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -57,21 +64,29 @@ const contentSecurityPolicy = [
 // Applied in production only: next dev's Turbopack HMR client opens its own
 // WebSocket back to the dev server, which a strict connect-src would block
 // mid-development for no real security benefit (localhost isn't the threat
-// model this header defends against). Verified for real against a
-// production build (`next build && next start`), not just reasoned about —
-// see PROJECT_STATUS.md.
+// model this header defends against).
 const productionOnlyHeaders =
   process.env.NODE_ENV === "production"
     ? [{ key: "Content-Security-Policy", value: contentSecurityPolicy }]
     : [];
 
+// src/proxy.ts sets its own stricter, nonce-based Content-Security-Policy
+// for /admin/* — excluded from the CSP header here (via the custom-regex
+// path below) rather than just trusting one to override the other, so
+// there's no ambiguity about which policy an admin response actually gets.
 const nextConfig: NextConfig = {
   async headers() {
     return [
       {
         source: "/:path*",
-        headers: [...securityHeaders, ...productionOnlyHeaders],
+        headers: securityHeaders,
       },
+      // Next.js rejects a route entry with an empty `headers` array, so
+      // this is only added at all once there's an actual header for it —
+      // in dev, productionOnlyHeaders is empty and this block is skipped.
+      ...(productionOnlyHeaders.length > 0
+        ? [{ source: "/:path((?!admin).*)", headers: productionOnlyHeaders }]
+        : []),
     ];
   },
   // Default Server Action body limit (1MB) is too small for an image
