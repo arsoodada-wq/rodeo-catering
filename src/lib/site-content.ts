@@ -69,6 +69,10 @@ export const menuHighlights = [
     category: "Sides & Desserts",
     items: ["Supreme Fries", "Flamin' Rodeo Supreme Nachos", "Ice Cream Saucers", "Luscious Lemon Squares"],
   },
+  {
+    category: "Healthy Bowls & Salads",
+    items: ["Fried Chicken Bowl", "California Cobb Bowl", "Edamame Falafel Bowl", "Build Your Own Bowl"],
+  },
 ] as const;
 
 // Package shells — mirrors prisma/seed.ts Package rows. No prices shown

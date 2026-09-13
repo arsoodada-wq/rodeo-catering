@@ -10,6 +10,7 @@ const categoryPhotos: Record<string, { src: string; alt: string }> = {
   "Smash Burgers": { src: "/images/rodeo/flying-dutchman-burger.jpg", alt: "The Flying Dutchman smash burger" },
   Chicken: { src: "/images/rodeo/buffalo-chicken-bowl.jpeg", alt: "Buffalo Chicken Bowl" },
   "Sides & Desserts": { src: "/images/rodeo/flamin-rodeo-supreme-nachos.jpeg", alt: "Flamin' Rodeo Supreme Nachos" },
+  "Healthy Bowls & Salads": { src: "/images/rodeo/fried-chicken-bowl.jpeg", alt: "Fried Chicken Bowl" },
 };
 
 export function MenuShowcase() {
@@ -25,12 +26,12 @@ export function MenuShowcase() {
           </h2>
           <p className="mt-4 text-ink-400">
             Every catering order is built from the same menu our regular
-            customers love — smash burgers, crispy chicken, and the sides
-            people order twice.
+            customers love — smash burgers, crispy chicken, healthy bowls
+            and salads, and the sides people order twice.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-8 md:grid-cols-3">
+        <div className="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {menuHighlights.map((group) => {
             const photo = categoryPhotos[group.category];
             return (
@@ -41,7 +42,7 @@ export function MenuShowcase() {
                       src={photo.src}
                       alt={photo.alt}
                       fill
-                      sizes="(min-width: 768px) 33vw, 100vw"
+                      sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
                       className="object-cover"
                     />
                   </div>
