@@ -9,7 +9,7 @@ import { QuoteBuilder } from "@/components/admin/QuoteBuilder";
 import { AccessRestricted } from "@/components/admin/AccessRestricted";
 import { PERMISSIONS, hasPageAccess } from "@/lib/permissions";
 import { Badge } from "@/components/ui/Badge";
-import { QUOTE_STATUS_TONES } from "@/lib/status";
+import { QUOTE_STATUS_TONES, LEAD_SOURCE_LABELS } from "@/lib/status";
 
 export default async function AdminLeadDetailPage({
   params,
@@ -47,6 +47,9 @@ export default async function AdminLeadDetailPage({
         <div>
           <h1 className="text-2xl font-extrabold tracking-tight text-ink-900">{lead.name}</h1>
           {lead.company && <p className="text-ink-400">{lead.company}</p>}
+          <p className="mt-1 text-xs font-medium uppercase tracking-wide text-ink-300">
+            via {LEAD_SOURCE_LABELS[lead.source] ?? lead.source}
+          </p>
         </div>
         <LeadStatusSelect leadId={lead.id} status={lead.status} />
       </div>

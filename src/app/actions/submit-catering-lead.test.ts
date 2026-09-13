@@ -44,6 +44,24 @@ describe("submitCateringLead", () => {
     expect(create).toHaveBeenCalledTimes(1);
   });
 
+  it("defaults to CATERING_WIZARD when no source is given", async () => {
+    await submitCateringLead({ ...baseInput, formStartedAtMs: Date.now() - 10_000 });
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ source: "CATERING_WIZARD" }) })
+    );
+  });
+
+  it("records AI_CONCIERGE as the source when the concierge tool submits it", async () => {
+    await submitCateringLead({
+      ...baseInput,
+      source: "AI_CONCIERGE",
+      formStartedAtMs: Date.now() - 10_000,
+    });
+    expect(create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: expect.objectContaining({ source: "AI_CONCIERGE" }) })
+    );
+  });
+
   it("notifies the admin of the new lead, but a notification failure doesn't fail the submission", async () => {
     sendNewLeadNotification.mockRejectedValueOnce(new Error("Resend is down"));
     const res = await submitCateringLead({ ...baseInput, formStartedAtMs: Date.now() - 10_000 });

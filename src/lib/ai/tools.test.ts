@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 
+const { submitCateringLead } = vi.hoisted(() => ({
+  submitCateringLead: vi.fn(async () => ({ ok: true as const, leadId: "lead-1" })),
+}));
 vi.mock("@/lib/db", () => ({ db: {} }));
-vi.mock("@/app/actions/submit-catering-lead", () => ({ submitCateringLead: vi.fn() }));
+vi.mock("@/app/actions/submit-catering-lead", () => ({ submitCateringLead }));
 vi.mock("@/lib/public-data", () => ({ getConfirmedServiceAreas: vi.fn(async () => []) }));
 
 import { executeConciergeTool } from "./tools";
@@ -35,5 +38,21 @@ describe("executeConciergeTool", () => {
   it("returns an error payload for an unknown tool name", async () => {
     const result = (await executeConciergeTool("delete_everything", {})) as { error: string };
     expect(result.error).toContain("Unknown tool");
+  });
+});
+
+describe("submit_catering_lead tool", () => {
+  it("tags the lead as AI_CONCIERGE rather than the wizard's default", async () => {
+    submitCateringLead.mockClear();
+    await executeConciergeTool("submit_catering_lead", {
+      name: "Jane Doe",
+      email: "jane@example.com",
+      eventType: "CORPORATE",
+      guestCount: 20,
+      cateringStyle: "PICKUP",
+    });
+    expect(submitCateringLead).toHaveBeenCalledWith(
+      expect.objectContaining({ source: "AI_CONCIERGE" })
+    );
   });
 });

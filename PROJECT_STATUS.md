@@ -998,14 +998,26 @@ and cookie/session config. Findings and what was done about each:
   (`public/file.svg`, `globe.svg`, `next.svg`, `vercel.svg`, `window.svg`)
   left over from the initial scaffold — confirmed unreferenced anywhere in
   `src/` before deleting, so they weren't shipping as dead weight
-- Noticed but deliberately not fixed this pass: every lead created by the
-  AI concierge is stored with `source: "CATERING_WIZARD"` — hardcoded
-  inside `submitCateringLead` regardless of caller, so a concierge-
-  originated lead is misattributed. Low current impact (`source` isn't
-  displayed anywhere in the admin UI yet), so it's flagged rather than
-  bundled into an unrelated commit; the fix is small (accept an optional
-  `source` param, have the concierge tool pass a distinct value) but needs
-  a schema migration to add that enum value
+- Fixed (2026-09-13) — the AI-concierge lead misattribution flagged above.
+  Added `AI_CONCIERGE` to the `LeadSource` enum (migration), gave
+  `submitCateringLead` an optional `source` param that defaults to
+  `CATERING_WIZARD` (preserving the guided wizard's existing behavior with
+  no caller changes needed there), and had the concierge's
+  `submit_catering_lead` tool (`src/lib/ai/tools.ts`) pass
+  `source: "AI_CONCIERGE"` explicitly. Also surfaced the field for the
+  first time — added `LEAD_SOURCE_LABELS` to `src/lib/status.ts` (covered
+  by the same enum-sync test pattern as the other status maps) and a
+  small "via Guided Wizard" / "via AI Concierge" line on the lead detail
+  page, so the correct attribution is actually visible somewhere, not
+  just correct in the database
+- Verified end-to-end: 3 new unit tests (2 in `submit-catering-lead.test.ts`
+  for the default and explicit-source cases, 1 in `tools.test.ts`
+  confirming the concierge tool passes `AI_CONCIERGE` through) plus the
+  extended `status.test.ts` sync check; confirmed against a real,
+  pre-existing wizard-submitted lead in the live admin UI that it now
+  shows "VIA GUIDED WIZARD" (the concierge path can't be exercised
+  end-to-end without a real Anthropic API key, same limitation noted for
+  the concierge in Phase 5 — the unit test covers that path instead)
 - Done: branded error/not-found pages, replacing Next.js's generic
   default ones. `(site)/not-found.tsx` and `(site)/error.tsx` render
   within the normal header/footer for a 404 or crash inside an actual

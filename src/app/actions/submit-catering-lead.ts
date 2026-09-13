@@ -47,6 +47,10 @@ const leadSchema = z.object({
   // Anti-spam signals, not real form fields — see CateringWizard.tsx.
   website: z.string().optional(),
   formStartedAtMs: z.number().optional(),
+  // Which entry point actually created this lead — defaults to the guided
+  // wizard since that's the only caller that existed before the AI
+  // concierge started sharing this same action.
+  source: z.enum(["CATERING_WIZARD", "AI_CONCIERGE"]).optional(),
 });
 
 export type CateringLeadInput = z.infer<typeof leadSchema>;
@@ -124,7 +128,7 @@ export async function submitCateringLead(
         zip: data.zip || undefined,
         foodSelections: data.foodSelections,
         notes: data.notes || undefined,
-        source: "CATERING_WIZARD",
+        source: data.source ?? "CATERING_WIZARD",
         status: "NEW",
       },
     });

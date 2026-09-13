@@ -156,6 +156,7 @@ enum LeadStatus {
 
 enum LeadSource {
   CATERING_WIZARD
+  AI_CONCIERGE
   QUOTE_FORM
   PHONE
   EMAIL

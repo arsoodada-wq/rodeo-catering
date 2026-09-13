@@ -64,3 +64,15 @@ export const OUTREACH_STATUS_TONES: Record<string, BadgeTone> = {
   NOT_INTERESTED: "danger",
   FOLLOW_UP: "warning",
 };
+
+export const LEAD_SOURCE_LABELS: Record<string, string> = {
+  CATERING_WIZARD: "Guided Wizard",
+  AI_CONCIERGE: "AI Concierge",
+  QUOTE_FORM: "Quote Form",
+  PHONE: "Phone",
+  EMAIL: "Email",
+  WALK_IN: "Walk-In",
+  REFERRAL: "Referral",
+  SOCIAL_MEDIA: "Social Media",
+  OTHER: "Other",
+};

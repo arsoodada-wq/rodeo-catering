@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LeadStatus, QuoteStatus, SocialStatus, OutreachStatus } from "@/generated/prisma/enums";
+import { LeadStatus, QuoteStatus, SocialStatus, OutreachStatus, LeadSource } from "@/generated/prisma/enums";
 import {
   LEAD_STATUS_LABELS,
   LEAD_STATUS_TONES,
@@ -8,6 +8,7 @@ import {
   SOCIAL_STATUS_TONES,
   OUTREACH_STATUS_LABELS,
   OUTREACH_STATUS_TONES,
+  LEAD_SOURCE_LABELS,
 } from "./status";
 
 // These guard against the exact class of bug this project has hit before:
@@ -19,6 +20,7 @@ describe("status tone/label maps stay in sync with the schema", () => {
   const quoteStatusValues = Object.values(QuoteStatus);
   const socialStatusValues = Object.values(SocialStatus);
   const outreachStatusValues = Object.values(OutreachStatus);
+  const leadSourceValues = Object.values(LeadSource);
 
   it("has a label for every LeadStatus value, and no extras", () => {
     expect(Object.keys(LEAD_STATUS_LABELS).sort()).toEqual([...leadStatusValues].sort());
@@ -46,5 +48,9 @@ describe("status tone/label maps stay in sync with the schema", () => {
 
   it("has a badge tone for every OutreachStatus value, and no extras", () => {
     expect(Object.keys(OUTREACH_STATUS_TONES).sort()).toEqual([...outreachStatusValues].sort());
+  });
+
+  it("has a label for every LeadSource value, and no extras", () => {
+    expect(Object.keys(LEAD_SOURCE_LABELS).sort()).toEqual([...leadSourceValues].sort());
   });
 });

@@ -168,6 +168,7 @@ async function submitLead(input: Record<string, unknown>) {
     city: typeof input.city === "string" ? input.city : undefined,
     foodSelections: Array.isArray(input.foodSelections) ? (input.foodSelections as string[]) : [],
     notes: typeof input.notes === "string" ? input.notes : undefined,
+    source: "AI_CONCIERGE",
   };
 
   const result = await submitCateringLead(leadInput);
