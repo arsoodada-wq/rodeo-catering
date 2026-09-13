@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { BuilderSection } from "@/components/catering/BuilderSection";
 import { PackagesTeaser } from "@/components/catering/PackagesTeaser";
@@ -17,22 +18,35 @@ export default async function CateringPage() {
     <>
       <section className="bg-ink-900 py-16 text-cream-50 md:py-20">
         <Container>
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-wide text-rodeo-400">
-              Catering
-            </p>
-            <h1 className="mt-2 text-4xl font-extrabold tracking-tight md:text-5xl">
-              Let&apos;s build your event.
-            </h1>
-            <p className="mt-4 text-cream-100/80">
-              Answer a few quick questions and our catering team will follow
-              up with a detailed quote — no pricing surprises, no guesswork.
-              Prefer to talk it through first? Call us at{" "}
-              <a href={business.phoneHref} className="font-semibold text-rodeo-300">
-                {business.phone}
-              </a>
-              .
-            </p>
+          <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-wide text-rodeo-400">
+                Catering
+              </p>
+              <h1 className="mt-2 text-4xl font-extrabold tracking-tight md:text-5xl">
+                Let&apos;s build your event.
+              </h1>
+              <p className="mt-4 text-cream-100/80">
+                Answer a few quick questions and our catering team will follow
+                up with a detailed quote — no pricing surprises, no guesswork.
+                Prefer to talk it through first? Call us at{" "}
+                <a href={business.phoneHref} className="font-semibold text-rodeo-300">
+                  {business.phone}
+                </a>
+                .
+              </p>
+            </div>
+
+            <div className="relative hidden aspect-square overflow-hidden rounded-3xl shadow-2xl shadow-black/40 lg:block">
+              <Image
+                src="/images/rodeo/we-cater-spread.jpg"
+                alt="A catering spread of Rodeo Burgers and Chicken burgers, wings, and sides"
+                fill
+                sizes="(min-width: 1024px) 40vw, 0px"
+                className="object-cover"
+                priority
+              />
+            </div>
           </div>
         </Container>
       </section>

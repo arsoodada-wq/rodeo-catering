@@ -14,6 +14,7 @@ export default function BurgerCateringPage() {
       title="Smash burgers, catered."
       intro="The same smash-burger technique from our kitchen — fresh, never frozen — brought to your event, however big or small."
       ctaLabel="Order Burger Catering"
+      image={{ src: "/images/rodeo/flying-dutchman-burger.jpg", alt: "The Flying Dutchman smash burger, stacked and dripping with cheese" }}
       highlights={[
         { icon: Flame, title: "Signature Smash Technique", description: "The same method that built our reputation, cooked for your event." },
         { icon: Beef, title: "Fresh, Never Frozen", description: "No shortcuts — the same quality as in our kitchen." },

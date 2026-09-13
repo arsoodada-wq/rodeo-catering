@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { business } from "@/lib/site-content";
@@ -15,36 +16,54 @@ export function EventLandingTemplate({
   intro,
   highlights,
   ctaLabel = "Start Your Order",
+  image,
 }: {
   eyebrow: string;
   title: string;
   intro: string;
   highlights: Highlight[];
   ctaLabel?: string;
+  /** Only pass this when a real photo of this event type's actual food exists — omit rather than reach for a generic stand-in. */
+  image?: { src: string; alt: string };
 }) {
   return (
     <>
       <section className="bg-ink-900 py-16 text-cream-50 md:py-24">
         <Container>
-          <div className="max-w-2xl">
-            <p className="text-sm font-semibold uppercase tracking-wide text-rodeo-400">
-              {eyebrow}
-            </p>
-            <h1 className="mt-2 text-4xl font-extrabold tracking-tight md:text-6xl">{title}</h1>
-            <p className="mt-5 text-lg text-cream-100/80">{intro}</p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <Button href="/catering#builder" size="lg">
-                {ctaLabel}
-              </Button>
-              <Button
-                href={business.phoneHref}
-                size="lg"
-                variant="ghost"
-                className="border-cream-50/25 text-cream-50 hover:border-cream-50/60"
-              >
-                Call {business.phone}
-              </Button>
+          <div className={image ? "grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]" : undefined}>
+            <div className="max-w-2xl">
+              <p className="text-sm font-semibold uppercase tracking-wide text-rodeo-400">
+                {eyebrow}
+              </p>
+              <h1 className="mt-2 text-4xl font-extrabold tracking-tight md:text-6xl">{title}</h1>
+              <p className="mt-5 text-lg text-cream-100/80">{intro}</p>
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Button href="/catering#builder" size="lg">
+                  {ctaLabel}
+                </Button>
+                <Button
+                  href={business.phoneHref}
+                  size="lg"
+                  variant="ghost"
+                  className="border-cream-50/25 text-cream-50 hover:border-cream-50/60"
+                >
+                  Call {business.phone}
+                </Button>
+              </div>
             </div>
+
+            {image && (
+              <div className="relative hidden aspect-square overflow-hidden rounded-3xl shadow-2xl shadow-black/40 lg:block">
+                <Image
+                  src={image.src}
+                  alt={image.alt}
+                  fill
+                  sizes="(min-width: 1024px) 40vw, 0px"
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            )}
           </div>
         </Container>
       </section>

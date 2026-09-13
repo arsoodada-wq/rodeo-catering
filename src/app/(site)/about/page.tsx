@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import { business, award } from "@/lib/site-content";
@@ -16,6 +17,17 @@ export default function AboutPage() {
         <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink-900 md:text-4xl">
           Fresh food, made from scratch, now for your event.
         </h1>
+
+        <div className="relative mt-8 aspect-[16/10] overflow-hidden rounded-2xl">
+          <Image
+            src="/images/rodeo/storefront.jpg"
+            alt="The Rodeo Burgers and Chicken storefront in Worth, IL"
+            fill
+            sizes="(min-width: 768px) 672px, 100vw"
+            className="object-cover"
+          />
+        </div>
+
         <div className="mt-6 space-y-4 text-ink-600">
           <p>
             Rodeo Burgers and Chicken is based at {business.address.street},{" "}

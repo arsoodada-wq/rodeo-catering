@@ -14,6 +14,7 @@ export default function ChickenCateringPage() {
       title="Crispy, saucy, catered right."
       intro="Wings, crispy chicken sandwiches, and loaded bowls — a menu that works for game day, office lunches, or any event in between."
       ctaLabel="Order Chicken Catering"
+      image={{ src: "/images/rodeo/fried-chicken-bowl.jpeg", alt: "A Fried Chicken Bowl with black beans, corn, and fresh vegetables" }}
       highlights={[
         { icon: Drumstick, title: "Wings, Sandwiches & Bowls", description: "A full chicken menu, not just one option." },
         { icon: Flame, title: "Customizable Heat", description: "From mild to lemon pepper to flamin' — dial it in for your crowd." },
