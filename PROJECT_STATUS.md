@@ -912,7 +912,7 @@ and cookie/session config. Findings and what was done about each:
   nonce-based CSP (the current one still allows `'unsafe-inline'` for
   scripts/styles — see above)
 
-## Phase 11 — Testing 🟡 (unit tests for the highest-risk logic; no e2e yet)
+## Phase 11 — Testing ✅
 
 - Done: Vitest (`npm test` / `npm run test:watch`), configured with
   `vite-tsconfig-paths` so tests can use the same `@/*` imports as the app.
@@ -954,9 +954,55 @@ and cookie/session config. Findings and what was done about each:
   via a direct database query that the saved subtotal/total matched the
   preview exactly — then deleted that test quote and reverted the lead's
   status, since it wasn't a real one
-- Not done: component/UI tests, integration tests against a real
-  database, end-to-end browser tests (Playwright or similar) for the
-  wizard → lead → quote → accept flow
+- Done (2026-09-13): the three gaps named above, closing this phase out.
+  - **Component/UI tests** — added `@testing-library/react` + `jsdom`
+    alongside the existing pure-logic tests, gated per-file via a
+    `// @vitest-environment jsdom` docblock so the fast node-environment
+    tests aren't slowed down. Covers the two highest-stakes interactive
+    components that had zero automated coverage: `CateringWizard.tsx`
+    (step-gating logic including the 48-hour minimum-notice guard, the
+    exact payload sent to `submitCateringLead`, success/error states) and
+    `QuoteBuilder.tsx` (live subtotal/total recalculation, add/remove line
+    items, create vs. edit wiring, clipboard copy). Writing the
+    `QuoteBuilder` tests surfaced a real, pre-existing accessibility gap —
+    the per-row Qty/Unit Price inputs and the remove-line-item button had
+    no accessible name at all for any row after the first (the visible
+    label only renders once, above row 0) — fixed with `aria-label`
+  - **Integration tests against a real database** — `quote-lifecycle.integration.test.ts`
+    hits the actual local Postgres via the real `@/lib/db` client, no
+    Prisma mocking (only the session and `revalidatePath`, which
+    genuinely can't exist outside a real Next.js request, are stubbed).
+    Covers create → auto-advance the lead to `QUOTE_SENT` → edit in place
+    → accept → confirm the lead, plus the expiration guard and the
+    can't-edit-an-accepted-quote lock — all verified against real rows
+    and real Postgres `Decimal` math, not mocked return values. Skips
+    itself via `describe.skipIf` when `DATABASE_URL` isn't configured.
+    Confirmed idempotent and leaves no data behind across repeated runs
+  - **End-to-end browser test** — added Playwright (`npm run test:e2e`),
+    with one test driving a real Chromium browser against the real dev
+    server and real database through the complete
+    wizard → lead → quote → accept chain: a (simulated) customer fills
+    out and submits the 8-step guided wizard; the lead is confirmed real;
+    an admin signs in and creates a quote; a **second, separate browser
+    context** — a genuinely different visitor, not just the same session
+    reused — opens the quote link and accepts it; the acceptance is
+    confirmed as a real status change on both the quote and the lead.
+    State-changing steps go through the real UI; read-only verification
+    (`e2e/db.ts`) uses raw `pg` queries rather than `@/lib/db`, since
+    Prisma 7's generated client uses `import.meta` — real ESM with no
+    CommonJS equivalent — which Playwright's default test transform can't
+    load (Vitest's Vite-based transform handles it fine, which is why
+    every other test in this project *can* just import `@/lib/db`
+    directly). Getting this test green surfaced two real behaviors to
+    account for, in the test rather than the app: the wizard's own
+    anti-bot timing guard silently drops a submission filled in under 3
+    seconds (exactly what a scripted test does) while still showing the
+    same success message by design, so the test now waits it out; and a
+    whole-dollar quote total renders as `$525`, not `$525.00`, since
+    Prisma's `Decimal` drops trailing zeros
+- Not done: visual regression testing, load/performance testing (see
+  Phase 10), running the e2e suite in CI (no CI pipeline exists yet — it
+  runs locally today against the local dev server and database)
 
 ## Phase 12 — Production readiness 🟡 (email notifications, error pages, health check done)
 

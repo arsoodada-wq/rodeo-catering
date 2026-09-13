@@ -114,12 +114,18 @@ admin (sign in with `ADMIN_EMAIL`/`ADMIN_PASSWORD`).
 ### 5. Run the tests
 
 ```bash
-npm test          # run once
-npm run test:watch
+npm test              # unit + component tests, run once
+npm run test:watch    # same, in watch mode
+npm run test:e2e      # Playwright end-to-end (needs the dev server + database)
 ```
 
-Unit tests only — pure logic (`src/lib/**/*.test.ts`), no database or
-server required.
+`npm test` runs everything under `src/**/*.test.ts(x)` via Vitest: pure
+logic (no database needed), React component tests (`@testing-library/react`
++ `jsdom`), and one integration suite that hits the real local Postgres
+directly (skips itself automatically if `DATABASE_URL` isn't set).
+`npm run test:e2e` drives a real Chromium browser through the full
+wizard → lead → quote → accept flow against the real dev server and
+database — start `npm run dev` first, or let Playwright start it for you.
 
 ## Project structure
 
