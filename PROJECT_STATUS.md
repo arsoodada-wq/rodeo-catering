@@ -1051,7 +1051,7 @@ and cookie/session config. Findings and what was done about each:
   Phase 10), running the e2e suite in CI (no CI pipeline exists yet — it
   runs locally today against the local dev server and database)
 
-## Phase 12 — Production readiness 🟡 (email notifications, error pages, health check done)
+## Phase 12 — Production readiness 🟡 (email notifications, error pages, health check, production database done)
 
 - Done: real new-lead email notifications, closing a gap `.env.example`
   had been documenting as if it already worked (`RESEND_API_KEY`,
@@ -1140,10 +1140,29 @@ and cookie/session config. Findings and what was done about each:
   checks only the database, not optional integrations like Resend or
   Anthropic, since this app already fails safe without those — a missing
   API key isn't the same as the site being down
-- Not done: an actual deployment (still blocked on the business
-  choosing/buying a domain and a host — see "Open business confirmations"
-  below), Google Search Console/Analytics wiring, a real load/performance
-  pass, backup strategy for the production database
+- Done (2026-09-16): the production database. Self-hosted PostgreSQL 16 +
+  PgBouncer set up on the business's own Hostinger VPS, entirely through
+  its browser-based web console (no SSH key or root password ever seen
+  by this repo or handled in chat) — see `DEPLOYMENT.md` for the full
+  architecture, what was verified, and the one real hiccup hit along the
+  way (Let's Encrypt's cert files are root-only, but PgBouncer runs as
+  the `postgres` user; fixed with a renewal deploy-hook that copies the
+  cert somewhere it can actually read, so this keeps working after the
+  certificate's automatic ~60-day renewal, not just today). Schema
+  migrated and seeded from a developer machine straight through the
+  public, TLS-secured, pooled connection — `prisma migrate deploy` had
+  no issues running through PgBouncer's transaction pooling for this
+  project's migrations. Verified for real: all 33 tables present, owned
+  by the dedicated non-superuser app account, admin login seeded, 15
+  menu items and 12 active service areas confirmed via direct query
+  against the live remote database
+- Not done: the actual Vercel deployment and domain connection (the
+  business is doing both directly — Vercel import and domain purchase
+  are next), Google Search Console/Analytics wiring, a real
+  load/performance pass. The database's own backup story is partially
+  covered by Hostinger's weekly VPS snapshots (2 already exist); a
+  logical `pg_dump`-based backup routine isn't set up yet — reasonable
+  once there's real customer data at stake, not urgent today
 
 ## Open business confirmations needed before launch
 
