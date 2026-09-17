@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { AlertTriangle } from "lucide-react";
 import { db } from "@/lib/db";
 import { formatEventDate } from "@/lib/format";

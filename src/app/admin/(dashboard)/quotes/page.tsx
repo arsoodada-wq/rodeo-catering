@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { AlertTriangle, ExternalLink } from "lucide-react";
 import { db } from "@/lib/db";
 import { AccessRestricted } from "@/components/admin/AccessRestricted";

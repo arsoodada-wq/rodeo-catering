@@ -74,3 +74,41 @@ body {
     border-color: var(--color-rodeo-500);
   }
 }
+
+/* Page-to-page navigation transition (next-view-transitions / native View
+   Transitions API). A quick crossfade + slight rise reads as "the next page
+   arrived" without a jarring hard cut. Old content fades out fast so it
+   doesn't linger; new content fades in slightly slower and delayed so the
+   two never visibly overlap. */
+::view-transition-old(root) {
+  animation: page-transition-out 120ms ease-in both;
+}
+::view-transition-new(root) {
+  animation: page-transition-in 220ms ease-out 100ms both;
+}
+
+@keyframes page-transition-out {
+  to {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@keyframes page-transition-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+/* Without this, the transition overlay blocks clicks on the incoming page
+   for its full duration. */
+::view-transition {
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Mail, Phone, MapPin, Calendar, Users } from "lucide-react";
 import { db } from "@/lib/db";

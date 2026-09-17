@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
+import { ViewTransitions } from "next-view-transitions";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import "./globals.css";
 
@@ -23,10 +24,12 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${poppins.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-cream-50 text-ink-900">
-        <ToastProvider>{children}</ToastProvider>
-      </body>
-    </html>
+    <ViewTransitions>
+      <html lang="en" className={`${poppins.variable} h-full antialiased`}>
+        <body className="min-h-full flex flex-col bg-cream-50 text-ink-900">
+          <ToastProvider>{children}</ToastProvider>
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }

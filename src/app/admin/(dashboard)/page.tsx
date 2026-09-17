@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { db } from "@/lib/db";
 import { Card } from "@/components/ui/Card";
