@@ -6,6 +6,8 @@
  * key and never accidentally email anyone.
  */
 
+import { getNotificationSettings } from "@/lib/notification-settings";
+
 type SendEmailInput = {
   to: string;
   subject: string;
@@ -64,7 +66,7 @@ function formatEventType(eventType: string) {
  * /admin/leads even if this email never arrives.
  */
 export async function sendNewLeadNotification(lead: NewLeadDetails): Promise<void> {
-  const to = process.env.ADMIN_NOTIFICATION_EMAIL;
+  const { email: to } = await getNotificationSettings();
   if (!to) return;
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";

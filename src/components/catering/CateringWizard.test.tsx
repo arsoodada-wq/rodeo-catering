@@ -9,10 +9,17 @@ const { submitCateringLead } = vi.hoisted(() => ({
 }));
 vi.mock("@/app/actions/submit-catering-lead", () => ({ submitCateringLead }));
 
+// Mirrors getMinSelectableDate()'s own local-calendar-day formatting in
+// CateringWizard.tsx — using toISOString() here would format in UTC while
+// the component compares in local time, making this helper's output drift
+// a day off from the component's own math depending on timezone/time of day.
 function dateString(daysFromNow: number): string {
   const d = new Date();
   d.setDate(d.getDate() + daysFromNow);
-  return d.toISOString().slice(0, 10);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${yyyy}-${mm}-${dd}`;
 }
 
 function setDate(value: string) {

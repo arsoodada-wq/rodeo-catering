@@ -19,6 +19,7 @@ import {
   Search,
   ImageIcon,
   FileStack,
+  Bell,
 } from "lucide-react";
 import { auth, signOut } from "@/lib/auth";
 import { PERMISSIONS, roleHasPermission, type PermissionKey } from "@/lib/permissions";
@@ -53,6 +54,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     }
   }
   if (isSuperAdmin) {
+    visibleLinks.push({ href: "/admin/notifications", label: "Notifications", icon: Bell });
     visibleLinks.push({ href: "/admin/users", label: "Admin Accounts", icon: UserCog });
     visibleLinks.push({ href: "/admin/permissions", label: "Permissions", icon: ShieldCheck });
   }

@@ -1,4 +1,10 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+
+const findUnique = vi.fn();
+vi.mock("@/lib/db", () => ({
+  db: { siteSetting: { findUnique: (...args: unknown[]) => findUnique(...args) } },
+}));
+
 import { sendEmail, sendNewLeadNotification } from "./email";
 
 const ORIGINAL_ENV = { ...process.env };
@@ -55,6 +61,9 @@ describe("sendNewLeadNotification", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     process.env = { ...ORIGINAL_ENV };
+    // No /admin/notifications setting saved yet, by default — falls back to
+    // the env var, same as before this admin panel existed.
+    findUnique.mockReset().mockResolvedValue(null);
   });
   afterEach(() => {
     process.env = { ...ORIGINAL_ENV };
@@ -87,5 +96,16 @@ describe("sendNewLeadNotification", () => {
     expect(logged).toContain("Jane Doe");
     expect(logged).toContain("50");
     expect(logged).toContain("Graduation");
+  });
+
+  it("prefers the email saved at /admin/notifications over the env var fallback", async () => {
+    process.env.ADMIN_NOTIFICATION_EMAIL = "env-fallback@example.com";
+    delete process.env.RESEND_API_KEY;
+    findUnique.mockResolvedValue({ value: { email: "admin-configured@example.com" } });
+    const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+
+    await sendNewLeadNotification(lead);
+
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("to=admin-configured@example.com"));
   });
 });
